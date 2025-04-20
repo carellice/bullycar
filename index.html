@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BullyCar - Gestione Auto</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="https://i.ibb.co/cKMm1Fd4/Designer.png" type="image/x-icon">
+</head>
+<body>
+    <div id="app-container" class="light-mode">
+        <header>
+            <div class="logo-container">
+                <!-- <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23f2f2f7'/%3E%3Cpath d='M65,35c-1.1-5.5-5.8-9-12-9s-11.3,3.9-12,9c-3.5,0.9-6.5,2.9-8.1,6.1c-2.1,4.2-1.5,9.9,1.8,14.4c2.4,3.2,6,5.5,10.3,5.5h16c4.3,0,7.9-2.3,10.3-5.5c3.3-4.5,3.9-10.2,1.8-14.4C71.5,37.9,68.5,35.9,65,35z' fill='%23c4c4c8'/%3E%3Cpath d='M40,45c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S42.2,45,40,45z M60,45c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S62.2,45,60,45z' fill='%23424242'/%3E%3Cpath d='M50,55c-3,0-5,2-5,2s2,4,5,4s5-4,5-4S53,55,50,55z' fill='%23424242'/%3E%3C/svg%3E" alt="BullyCar Logo" class="logo"> -->
+                <img src="https://i.ibb.co/cKMm1Fd4/Designer.png" alt="BullyCar Logo" class="logo">
+                <h1>BullyCar</h1>
+            </div>
+            <div class="header-controls">
+                <button id="export-button" class="icon-button" title="Esporta dati">
+                    <i class="fas fa-file-export"></i>
+                </button>
+                <button id="import-button" class="icon-button" title="Importa dati">
+                    <i class="fas fa-file-import"></i>
+                </button>
+                <div class="theme-dropdown">
+                    <button id="theme-toggle" class="icon-button" title="Cambia tema">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="theme-menu hidden">
+                        <button class="theme-option" data-theme="light">
+                            <i class="fas fa-sun"></i> Chiaro
+                        </button>
+                        <button class="theme-option" data-theme="dark">
+                            <i class="fas fa-moon"></i> Scuro
+                        </button>
+                        <button class="theme-option" data-theme="system">
+                            <i class="fas fa-laptop"></i> Sistema
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="garage-view" class="view active">
+                <div class="section-header">
+                    <h2>Il mio garage</h2>
+                    <button id="add-car-button" class="primary-button">
+                        <i class="fas fa-plus"></i> Aggiungi auto
+                    </button>
+                </div>
+                <div id="cars-container" class="cars-grid">
+                    <!-- Le auto verranno inserite qui dinamicamente -->
+                </div>
+            </div>
+
+            <div id="car-form-view" class="view">
+                <div class="section-header">
+                    <button class="back-button">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h2 id="form-title">Nuova auto</h2>
+                </div>
+                <form id="car-form">
+                    <div class="form-image-container">
+                        <div id="car-image-preview">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <label class="file-input-label">
+                            <input type="file" id="car-image" accept="image/*">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-name">Nome dell'auto</label>
+                        <input type="text" id="car-name" placeholder="Es. La mia Panda" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-brand">Marca</label>
+                        <input type="text" id="car-brand" placeholder="Es. Fiat" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-model">Modello</label>
+                        <input type="text" id="car-model" placeholder="Es. Panda" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-year">Anno</label>
+                        <input type="number" id="car-year" placeholder="Es. 2020" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-plate">Targa</label>
+                        <input type="text" id="car-plate" placeholder="Es. AB123CD" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-registration-date">Data immatricolazione</label>
+                        <input type="date" id="car-registration-date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-mileage">Chilometraggio attuale</label>
+                        <input type="number" id="car-mileage" placeholder="Es. 50000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="car-doc">Libretto auto (PDF)</label>
+                        <input type="file" id="car-doc" accept="application/pdf">
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="secondary-button cancel-form">Annulla</button>
+                        <button type="submit" class="primary-button">Salva</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="car-detail-view" class="view">
+                <div class="section-header">
+                    <button class="back-button">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h2 id="car-detail-title">Dettaglio auto</h2>
+                    <button id="edit-car-button" class="icon-button">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+
+                <div id="car-info-container" class="detail-container">
+                    <div class="car-image-large">
+                        <!-- Immagine auto qui -->
+                    </div>
+                    <div class="car-info">
+                        <!-- Informazioni auto qui -->
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="maintenance">Manutenzione</button>
+                        <button class="tab-button" data-tab="documents">Documenti</button>
+                        <button class="tab-button" data-tab="reminders">Promemoria</button>
+                    </div>
+
+                    <div id="maintenance-tab" class="tab-content active">
+                        <div class="action-header">
+                            <h3>Interventi</h3>
+                            <button id="add-maintenance-button" class="primary-button">
+                                <i class="fas fa-plus"></i> Aggiungi
+                            </button>
+                        </div>
+                        <div id="maintenance-list">
+                            <!-- Interventi qui -->
+                        </div>
+                    </div>
+
+                    <div id="documents-tab" class="tab-content">
+                        <div id="car-documents">
+                            <!-- Documenti qui -->
+                        </div>
+                    </div>
+
+                    <div id="reminders-tab" class="tab-content">
+                        <div id="reminders-list">
+                            <!-- Promemoria qui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="maintenance-form-view" class="view">
+                <div class="section-header">
+                    <button class="back-button">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h2>Nuovo intervento</h2>
+                </div>
+                <form id="maintenance-form">
+                    <div class="form-group">
+                        <label for="maintenance-type">Tipo di intervento</label>
+                        <select id="maintenance-type" required>
+                            <option value="">Seleziona un intervento</option>
+                            <option value="tagliando">Tagliando</option>
+                            <option value="revisione">Revisione</option>
+                            <option value="bollo">Pagamento bollo</option>
+                            <option value="assicurazione">Rinnovo assicurazione</option>
+                            <option value="gomme">Cambio gomme</option>
+                            <option value="custom">Personalizzato</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group hidden" id="custom-type-container">
+                        <label for="custom-maintenance-type">Nome intervento personalizzato</label>
+                        <input type="text" id="custom-maintenance-type" placeholder="Es. Cambio olio">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenance-date">Data intervento</label>
+                        <input type="date" id="maintenance-date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenance-mileage">Chilometraggio</label>
+                        <input type="number" id="maintenance-mileage" placeholder="Es. 50000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenance-cost">Costo (€)</label>
+                        <input type="number" id="maintenance-cost" placeholder="Es. 150" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenance-notes">Note</label>
+                        <textarea id="maintenance-notes" rows="3" placeholder="Dettagli sull'intervento"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maintenance-reminder">Imposta promemoria per il prossimo intervento</label>
+                        <div class="reminder-options">
+                            <div>
+                                <input type="checkbox" id="maintenance-reminder">
+                                <label for="maintenance-reminder">Attiva promemoria</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="reminder-settings" class="hidden">
+                        <div class="form-group">
+                            <label for="reminder-type">Tipo di promemoria</label>
+                            <select id="reminder-type">
+                                <option value="date">Data specifica</option>
+                                <option value="interval">Intervallo di tempo</option>
+                                <option value="mileage">Chilometraggio</option>
+                                <option value="both">Data e chilometraggio</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group date-reminder">
+                            <label for="reminder-date">Data prossimo intervento</label>
+                            <input type="date" id="reminder-date">
+                        </div>
+
+                        <div class="form-group interval-reminder hidden">
+                            <label for="reminder-interval">Intervallo</label>
+                            <div class="interval-inputs">
+                                <input type="number" id="reminder-interval-value" min="1" value="1">
+                                <select id="reminder-interval-unit">
+                                    <option value="month">Mese/i</option>
+                                    <option value="year">Anno/i</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group mileage-reminder hidden">
+                            <label for="reminder-mileage">Chilometraggio per prossimo intervento</label>
+                            <input type="number" id="reminder-mileage" placeholder="Es. 60000">
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="secondary-button cancel-form">Annulla</button>
+                        <button type="submit" class="primary-button">Salva</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <div id="modal-container" class="hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-title">Attenzione</h3>
+                    <button id="close-modal" class="icon-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="modal-content">
+                    <!-- Contenuto modale qui -->
+                </div>
+                <div id="modal-buttons">
+                    <button id="modal-cancel" class="secondary-button">Annulla</button>
+                    <button id="modal-confirm" class="primary-button">Conferma</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="notifications-container">
+            <!-- Notifiche qui -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

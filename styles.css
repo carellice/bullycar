@@ -1,0 +1,1053 @@
+/* Reset e stile base */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    /* Tema chiaro (predefinito) */
+    --background-primary: #f2f2f7;
+    --background-secondary: #ffffff;
+    --text-primary: #000000;
+    --text-secondary: #8e8e93;
+    --border-color: #d1d1d6;
+    --accent-color: #007aff;
+    --accent-color-light: #3396ff;
+    --danger-color: #ff3b30;
+    --success-color: #34c759;
+    --warning-color: #ff9500;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 4px 10px var(--shadow-color);
+    --modal-background: rgba(0, 0, 0, 0.4);
+}
+
+/* Tema scuro */
+.dark-mode {
+    --background-primary: #1c1c1e;
+    --background-secondary: #2c2c2e;
+    --text-primary: #ffffff;
+    --text-secondary: #8e8e93;
+    --border-color: #38383a;
+    --accent-color: #0a84ff;
+    --accent-color-light: #5ac8fa;
+    --danger-color: #ff453a;
+    --success-color: #30d158;
+    --warning-color: #ff9f0a;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --card-shadow: 0 4px 10px var(--shadow-color);
+    --modal-background: rgba(0, 0, 0, 0.6);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+#app-container {
+    min-height: 100vh;
+    max-width: 100%;
+    margin: 0 auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--background-primary);
+}
+
+/* Header */
+header {
+    background-color: var(--background-secondary);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px var(--shadow-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 0.5rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.header-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Bottoni */
+.icon-button {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.icon-button:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.primary-button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.primary-button:hover {
+    background-color: var(--accent-color-light);
+}
+
+.secondary-button {
+    background-color: transparent;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.secondary-button:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Main Content */
+main {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Cars Grid */
+.cars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.car-card {
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.car-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadow-color);
+}
+
+.car-image {
+    height: 160px;
+    background-color: #e5e5ea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.car-image i {
+    font-size: 3rem;
+    color: var(--text-secondary);
+}
+
+.car-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.car-details {
+    padding: 1rem;
+}
+
+.car-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.car-info-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.car-info-label {
+    color: var(--text-secondary);
+}
+
+.car-alerts {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.alert-badge {
+    background-color: var(--warning-color);
+    color: white;
+    border-radius: 20px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Form styles */
+form {
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.form-image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+#car-image-preview {
+    width: 160px;
+    height: 160px;
+    border-radius: 15px;
+    background-color: #e5e5ea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+#car-image-preview i {
+    font-size: 3rem;
+    color: var(--text-secondary);
+}
+
+#car-image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.file-input-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--accent-color);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.file-input-label input[type="file"] {
+    display: none;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+input[type="file"] {
+    font-size: 0.9rem;
+}
+
+.reminder-options {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.interval-inputs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: 2rem;
+}
+
+/* Detail View */
+.detail-container {
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.car-image-large {
+    height: 200px;
+    background-color: #e5e5ea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.car-image-large i {
+    font-size: 4rem;
+    color: var(--text-secondary);
+}
+
+.car-image-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.car-info {
+    padding: 1.5rem;
+}
+
+.car-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    margin-bottom: 0.8rem;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.2rem;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tab-button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    min-width: 120px;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-button.active {
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.tab-content {
+    display: none;
+    padding: 1.5rem;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.action-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Maintenance list */
+.maintenance-item {
+    background-color: var(--background-primary);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.maintenance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.maintenance-title {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.maintenance-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.maintenance-cost {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.maintenance-details {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.maintenance-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Document list */
+.document-item {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-primary);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+}
+
+.document-icon {
+    font-size: 1.5rem;
+    color: var(--accent-color);
+    margin-right: 1rem;
+}
+
+.document-info {
+    flex: 1;
+}
+
+.document-title {
+    font-weight: 500;
+}
+
+.document-size {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Reminders */
+.reminder-item {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-primary);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.reminder-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+.reminder-info {
+    flex: 1;
+}
+
+.reminder-title {
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+}
+
+.reminder-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.reminder-urgent {
+    color: var(--danger-color);
+}
+
+.reminder-warning {
+    color: var(--warning-color);
+}
+
+.reminder-normal {
+    color: var(--success-color);
+}
+
+/* Modal */
+#modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--modal-background);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal {
+    background-color: var(--background-secondary);
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#modal-content {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+#modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* PDF viewer */
+.pdf-container {
+    width: 100%;
+    height: 500px;
+    max-height: 70vh;
+    overflow: hidden;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.pdf-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Notifications */
+#notifications-container {
+    position: fixed;
+    top: 5rem;
+    right: 1rem;
+    width: 300px;
+    max-width: 100%;
+    z-index: 50;
+}
+
+.notification {
+    background-color: var(--background-secondary);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    box-shadow: var(--card-shadow);
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 3.7s;
+    opacity: 1;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.notification-title {
+    font-weight: 600;
+}
+
+.notification-body {
+    font-size: 0.9rem;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Utility classes */
+.hidden {
+    display: none !important;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .car-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-buttons {
+        flex-direction: column-reverse;
+    }
+    
+    .form-buttons button {
+        width: 100%;
+    }
+    
+    .interval-inputs {
+        flex-direction: column;
+    }
+    
+    .tabs {
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+    
+    .tab-button {
+        flex: 0 0 auto;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 0.8rem;
+    }
+    
+    .logo {
+        width: 30px;
+        height: 30px;
+    }
+    
+    h1 {
+        font-size: 1.2rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .section-header button.primary-button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .cars-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    form {
+        padding: 1rem;
+    }
+    
+    #modal-buttons {
+        flex-direction: column-reverse;
+    }
+    
+    #modal-buttons button {
+        width: 100%;
+    }
+}
+
+/* Menu tema */
+.theme-dropdown {
+    position: relative;
+}
+
+.theme-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--background-secondary);
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    z-index: 20;
+    overflow: hidden;
+    width: 150px;
+    margin-top: 0.5rem;
+}
+
+.theme-option {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.theme-option:hover {
+    background-color: var(--background-primary);
+}
+
+/* Correggi i colori in dark mode */
+.dark-mode input[type="text"],
+.dark-mode input[type="number"],
+.dark-mode input[type="date"],
+.dark-mode select,
+.dark-mode textarea {
+    color: var(--text-primary);
+    background-color: var(--background-primary);
+    border-color: var(--border-color);
+}
+
+.dark-mode ::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Input checkbox in dark mode */
+.dark-mode input[type="checkbox"] {
+    accent-color: var(--accent-color);
+}
+
+/* Aggiungi queste regole CSS per sistemare completamente la dark mode */
+
+/* Imposta le classi light-mode e dark-mode esplicitamente */
+.light-mode {
+    --background-primary: #f2f2f7;
+    --background-secondary: #ffffff;
+    --text-primary: #000000;
+    --text-secondary: #8e8e93;
+    --border-color: #d1d1d6;
+    --accent-color: #007aff;
+    --accent-color-light: #3396ff;
+    --danger-color: #ff3b30;
+    --success-color: #34c759;
+    --warning-color: #ff9500;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 4px 10px var(--shadow-color);
+    --modal-background: rgba(0, 0, 0, 0.4);
+}
+
+/* Assicurati che tutti gli elementi specifici abbiano il colore corretto in dark mode */
+.dark-mode .car-card,
+.dark-mode .maintenance-item,
+.dark-mode .document-item,
+.dark-mode .reminder-item,
+.dark-mode .modal,
+.dark-mode .notification,
+.dark-mode form {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+.dark-mode .car-image,
+.dark-mode .car-image-large,
+.dark-mode #car-image-preview {
+    background-color: #3a3a3c;
+}
+
+.dark-mode .maintenance-item,
+.dark-mode .document-item,
+.dark-mode .reminder-item {
+    background-color: var(--background-primary);
+}
+
+.dark-mode .car-info-label,
+.dark-mode .info-label,
+.dark-mode .maintenance-date,
+.dark-mode .document-size,
+.dark-mode .reminder-date {
+    color: var(--text-secondary);
+}
+
+.dark-mode .car-details .car-name,
+.dark-mode .car-info .info-value,
+.dark-mode .maintenance-title,
+.dark-mode .document-title,
+.dark-mode .reminder-title {
+    color: var(--text-primary);
+}
+
+/* Imposta esplicitamente il colore dell'icona del tema */
+.dark-mode .icon-button {
+    color: var(--accent-color);
+}
+
+/* Imposta correttamente i colori dei bottoni in dark mode */
+.dark-mode .primary-button {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.dark-mode .secondary-button {
+    background-color: transparent;
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* Fissa il colore dell'icona nei campi file */
+.dark-mode .file-input-label {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Fissa il colore dell'icona nel preview dell'immagine */
+.dark-mode #car-image-preview i,
+.dark-mode .car-image i,
+.dark-mode .car-image-large i {
+    color: var(--text-secondary);
+}
+
+/* Sistema le tab in dark mode */
+.dark-mode .tabs {
+    border-color: var(--border-color);
+}
+
+.dark-mode .tab-button {
+    color: var(--text-secondary);
+}
+
+.dark-mode .tab-button.active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* Sistema i modali in dark mode */
+.dark-mode .modal-header,
+.dark-mode #modal-buttons {
+    border-color: var(--border-color);
+}
+
+/* Sistema lo sfondo vuoto in dark mode */
+.dark-mode .empty-state {
+    color: var(--text-secondary);
+}
+
+/* Correggi i select in dark mode che possono avere problemi */
+.dark-mode select option {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+/* Evidenzia il tema selezionato */
+.theme-option.selected {
+    background-color: rgba(0, 122, 255, 0.1);
+    font-weight: 500;
+}
+
+.dark-mode header {
+    background-color: var(--background-secondary);
+}
+
+.dark-mode header h1,
+.dark-mode .logo-container h1 {
+    color: var(--text-primary);
+}
+
+/* Assicurati che lo sfondo principale dell'app cambi colore */
+.dark-mode {
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+}
+
+/* Applica il colore di sfondo principale all'HTML e al BODY */
+html, body {
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+header, main, .car-card, .detail-container, form, .modal, .notification {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Stile per evidenziare i promemoria imminenti */
+.reminder-item.imminent {
+    border-left: 4px solid var(--warning-color);
+    background-color: rgba(255, 149, 0, 0.1);
+}
+
+.dark-mode .reminder-item.imminent {
+    background-color: rgba(255, 159, 10, 0.15);
+}
+
+/* Badge di notifica per i tab */
+.tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background-color: var(--danger-color);
+    color: white;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+/* Stile per i promemoria nelle card delle auto */
+.car-reminders {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+}
+
+.reminders-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.reminders-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.reminder-item-small {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+    color: var(--text-primary);
+}
+
+.reminder-item-small i {
+    margin-right: 0.4rem;
+}
+
+.reminder-item-small.urgent i {
+    color: var(--danger-color);
+}
+
+.reminder-item-small.warning i {
+    color: var(--warning-color);
+}
+
+.reminder-item-small.normal i {
+    color: var(--success-color);
+}
