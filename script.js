@@ -61,7 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
             mileageReminder: document.querySelector('.mileage-reminder'),
             
             // Notifiche
-            notificationsContainer: document.getElementById('notifications-container')
+            notificationsContainer: document.getElementById('notifications-container'),
+
+            settingsButton: document.getElementById('settings-button'),
         },
         
         // Inizializzazione
@@ -171,6 +173,85 @@ document.addEventListener('DOMContentLoaded', function() {
             // Eventi import/export
             this.elements.exportButton.addEventListener('click', () => this.exportData());
             this.elements.importButton.addEventListener('click', () => this.showImportDialog());
+
+            // Eventi impostazioni
+            this.elements.settingsButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleSettingsMenu();
+            });
+
+            // Chiudi i menu quando si clicca altrove
+            document.addEventListener('click', () => {
+                document.querySelector('.theme-menu')?.classList.add('hidden');
+                document.querySelector('.settings-menu')?.classList.add('hidden');
+            });
+        },
+
+        toggleSettingsMenu: function() {
+            // Rimuovi menu esistente se c'è
+            document.querySelector('.settings-menu')?.remove();
+
+            // Crea il menu impostazioni
+            const menu = document.createElement('div');
+            menu.className = 'settings-menu';
+
+            menu.innerHTML = `
+        <button class="settings-option danger" id="reset-data">
+            <i class="fas fa-trash-alt"></i> Cancella tutti i dati
+        </button>
+    `;
+
+            // Previeni la propagazione del click
+            menu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // Aggiungi il menu al documento
+            this.elements.settingsButton.parentNode.appendChild(menu);
+
+            // Aggiungi event listener per il reset
+            document.getElementById('reset-data').addEventListener('click', () => {
+                this.showResetConfirmation();
+            });
+        },
+
+        showResetConfirmation: function() {
+            this.showModal('Cancella tutti i dati', `
+        <p><strong>Attenzione!</strong> Questa operazione cancellerà definitivamente tutti i dati dell'app.</p>
+        <p>Tutte le auto, gli interventi, i promemoria e i documenti verranno eliminati.</p>
+        <p>Questa azione non può essere annullata.</p>
+        <p>Se vuoi conservare i tuoi dati, esporta un backup prima di procedere.</p>
+    `);
+
+            this.elements.modalConfirm.textContent = 'Cancella tutto';
+            this.elements.modalConfirm.classList.add('danger-button');
+
+            this.elements.modalConfirm.onclick = () => {
+                this.resetAllData();
+                this.hideModal();
+            };
+
+            this.elements.modalCancel.onclick = () => {
+                this.hideModal();
+                this.elements.modalConfirm.classList.remove('danger-button');
+            };
+        },
+
+        resetAllData: function() {
+            // Inizializza un nuovo oggetto dati vuoto
+            this.data = {
+                cars: [],
+                currentCarId: null,
+                nextId: 1
+            };
+
+            // Salva nel localStorage
+            localStorage.removeItem('bullyCarData');
+
+            // Aggiorna l'interfaccia
+            this.showNotification('Completato', 'Tutti i dati sono stati cancellati', 'info');
+            this.renderCars();
+            this.updateRemindersBadge();
         },
         
         // Carica dati dal localStorage
@@ -1354,7 +1435,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Crea un link per scaricare il file
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `bullycar_backup_${new Date().toISOString().split('T')[0]}.bcar`;
+                a.download = `bullycar_backup_${new Date().toISOString().split('T')[0]}.txt`;
                 
                 // Aggiunge il link al documento e clicca su di esso
                 document.body.appendChild(a);
@@ -1372,14 +1453,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.showNotification('Errore', 'Impossibile esportare i dati', 'error');
             }
         },
-        
+
         showImportDialog: function() {
             this.showModal('Importa dati', `
                 <p>Seleziona un file di backup per importare i tuoi dati.</p>
                 <p><strong>Attenzione:</strong> Questa operazione sovrascriverà tutti i dati esistenti.</p>
-                <input type="file" id="import-file" accept=".bcar" class="import-file-input">
+                <input type="file" id="import-file" accept=".txt" class="import-file-input">
             `);
-            
+
+            // Cambia il testo del pulsante di conferma
+            this.elements.modalConfirm.textContent = 'Importa';
+
             this.elements.modalConfirm.onclick = () => {
                 const fileInput = document.getElementById('import-file');
                 if (fileInput.files.length > 0) {
@@ -1387,7 +1471,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
         },
-        
+
         importData: function(file) {
             if (!file) return;
             
@@ -1515,9 +1599,11 @@ document.addEventListener('DOMContentLoaded', function() {
             this.elements.modalTitle.textContent = title;
             this.elements.modalContent.innerHTML = content;
             this.elements.modalContainer.classList.remove('hidden');
-            
+
             // Reset bottoni
             this.elements.modalConfirm.style.display = 'block';
+            this.elements.modalConfirm.textContent = 'Conferma'; // Reset al testo predefinito
+            this.elements.modalConfirm.classList.remove('danger-button'); // Rimuovi classe danger
             this.elements.modalCancel.textContent = 'Annulla';
         },
         

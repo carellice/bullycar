@@ -1051,3 +1051,60 @@ header, main, .car-card, .detail-container, form, .modal, .notification {
 .reminder-item-small.normal i {
     color: var(--success-color);
 }
+
+/* Menu impostazioni */
+.settings-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--background-secondary);
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    z-index: 20;
+    overflow: hidden;
+    width: 200px;
+    margin-top: 0.5rem;
+}
+
+.settings-option {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.settings-option:hover {
+    background-color: var(--background-primary);
+}
+
+.settings-option.danger {
+    color: var(--danger-color);
+}
+
+.settings-option.danger:hover {
+    background-color: rgba(255, 59, 48, 0.1);
+}
+
+.dark-mode .settings-option.danger:hover {
+    background-color: rgba(255, 69, 58, 0.15);
+}
+
+/* Stile per il pulsante di conferma pericoloso */
+.danger-button {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.danger-button:hover {
+    background-color: #ff5146 !important;
+}
+
+.dark-mode .danger-button:hover {
+    background-color: #ff6961 !important;
+}
