@@ -74,6 +74,28 @@ document.addEventListener('DOMContentLoaded', function() {
             this.checkReminders();
             this.loadTheme();
             this.updateRemindersBadge();
+
+            // Registra il service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./service-worker.js')
+                        .then((registration) => {
+                            console.log('ServiceWorker registrato con successo:', registration.scope);
+                        })
+                        .catch((error) => {
+                            console.log('Registrazione ServiceWorker fallita:', error);
+                        });
+                });
+            }
+
+            // Controlla se l'app è stata avviata da una scorciatoia
+            const urlParams = new URLSearchParams(window.location.search);
+            const action = urlParams.get('action');
+
+            if (action === 'add-car') {
+                // Mostra direttamente il form per aggiungere una nuova auto
+                this.showCarForm();
+            }
         },
         
         // Binding degli eventi
