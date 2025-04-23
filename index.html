@@ -154,9 +154,27 @@
                     <div id="maintenance-tab" class="tab-content active">
                         <div class="action-header">
                             <h3>Interventi</h3>
-                            <button id="add-maintenance-button" class="primary-button">
-                                <i class="fas fa-plus"></i> Aggiungi
-                            </button>
+                            <div class="filters-container">
+                                <div class="filter-dropdown">
+                                    <button class="filter-button">
+                                        <i class="fas fa-filter"></i>
+                                        <span id="current-filter">Tutti</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="filter-options hidden">
+                                        <button class="filter-option selected" data-type="all">Tutti</button>
+                                        <button class="filter-option" data-type="assicurazione">Assicurazione</button>
+                                        <button class="filter-option" data-type="bollo">Bollo</button>
+                                        <button class="filter-option" data-type="gomme">Cambio gomme</button>
+                                        <button class="filter-option" data-type="custom">Personalizzati</button>
+                                        <button class="filter-option" data-type="revisione">Revisione</button>
+                                        <button class="filter-option" data-type="tagliando">Tagliando</button>
+                                    </div>
+                                </div>
+                                <button id="add-maintenance-button" class="primary-button">
+                                    <i class="fas fa-plus"></i> Aggiungi
+                                </button>
+                            </div>
                         </div>
                         <div id="maintenance-list">
                             <!-- Interventi qui -->

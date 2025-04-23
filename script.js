@@ -96,6 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Mostra direttamente il form per aggiungere una nuova auto
                 this.showCarForm();
             }
+
+            this.currentMaintenanceFilter = 'all';
         },
         
         // Binding degli eventi
@@ -207,6 +209,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.querySelector('.theme-menu')?.classList.add('hidden');
                 document.querySelector('.settings-menu')?.classList.add('hidden');
             });
+
+            // Gestione del filtro manutenzione
+            document.addEventListener('click', (e) => {
+                const filterButton = e.target.closest('.filter-button');
+                if (filterButton) {
+                    e.stopPropagation();
+                    const filterOptions = filterButton.nextElementSibling;
+                    filterOptions.classList.toggle('hidden');
+                } else {
+                    // Chiudi dropdown se si clicca altrove
+                    document.querySelectorAll('.filter-options').forEach(el => {
+                        el.classList.add('hidden');
+                    });
+                }
+
+                const filterOption = e.target.closest('.filter-option');
+                if (filterOption) {
+                    const filterType = filterOption.dataset.type;
+                    this.filterMaintenance(filterType);
+
+                    // Aggiorna UI
+                    document.querySelectorAll('.filter-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    filterOption.classList.add('selected');
+                    document.getElementById('current-filter').textContent = filterOption.textContent;
+                }
+            });
         },
 
         toggleSettingsMenu: function() {
@@ -235,6 +265,17 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('reset-data').addEventListener('click', () => {
                 this.showResetConfirmation();
             });
+        },
+
+        filterMaintenance: function(filterType) {
+            const car = this.getCarById(this.data.currentCarId);
+            if (!car) return;
+
+            // Memorizza il filtro corrente
+            this.currentMaintenanceFilter = filterType;
+
+            // Renderizza la lista filtrata
+            this.renderMaintenanceList(car);
         },
 
         showResetConfirmation: function() {
@@ -373,6 +414,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.showNotification('Errore', 'Auto non trovata', 'error');
                 return this.showGarage();
             }
+
+            // Resetta il filtro manutenzione
+            this.currentMaintenanceFilter = 'all';
+
+            // Seleziona il filtro "Tutti"
+            setTimeout(() => {
+                document.querySelectorAll('.filter-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    if (opt.dataset.type === 'all') {
+                        opt.classList.add('selected');
+                    }
+                });
+
+                const currentFilterEl = document.getElementById('current-filter');
+                if (currentFilterEl) {
+                    currentFilterEl.textContent = 'Tutti';
+                }
+            }, 0);
             
             // Aggiorna titolo
             document.getElementById('car-detail-title').textContent = car.name;
@@ -906,7 +965,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderMaintenanceList: function(car) {
             const container = this.elements.maintenanceList;
             container.innerHTML = '';
-            
+
             if (!car.maintenance || car.maintenance.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -915,9 +974,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 return;
             }
-            
+
+            // Filtra per tipo se necessario
+            let maintenanceItems = [...car.maintenance];
+
+            if (this.currentMaintenanceFilter && this.currentMaintenanceFilter !== 'all') {
+                if (this.currentMaintenanceFilter === 'custom') {
+                    // Filtra per interventi personalizzati
+                    maintenanceItems = maintenanceItems.filter(item => item.type === 'custom');
+                } else {
+                    // Filtra per tipo specifico
+                    maintenanceItems = maintenanceItems.filter(item => item.type === this.currentMaintenanceFilter);
+                }
+
+                // Mostra un messaggio se non ci sono interventi del tipo selezionato
+                if (maintenanceItems.length === 0) {
+                    container.innerHTML = `
+                <div class="empty-state">
+                    <p>Nessun intervento di tipo "${this.getMaintenanceTypeName(this.currentMaintenanceFilter)}" trovato.</p>
+                </div>
+            `;
+                    return;
+                }
+            }
+
             // Ordina per data (più recente prima)
-            const sortedMaintenance = [...car.maintenance].sort((a, b) => 
+            const sortedMaintenance = maintenanceItems.sort((a, b) =>
                 new Date(b.date) - new Date(a.date)
             );
             

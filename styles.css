@@ -387,9 +387,10 @@ input[type="file"] {
 .detail-container {
     background-color: var(--background-secondary);
     border-radius: 15px;
-    overflow: hidden;
+    overflow: visible; /* Cambiato da 'hidden' a 'visible' */
     box-shadow: var(--card-shadow);
     margin-bottom: 2rem;
+    position: relative; /* Aggiunto per gestire correttamente gli elementi assoluti */
 }
 
 .car-image-large {
@@ -467,6 +468,7 @@ input[type="file"] {
 .tab-content {
     display: none;
     padding: 1.5rem;
+    overflow: visible; /* Assicura che il dropdown non venga tagliato */
 }
 
 .tab-content.active {
@@ -1227,4 +1229,100 @@ header, main, .car-card, .detail-container, form, .modal, .notification {
 
 .fullscreen-viewer.light-mode .close-viewer {
     color: #007aff;
+}
+
+/* Stile per i filtri di manutenzione */
+.action-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.filters-container {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.filter-dropdown {
+    position: relative;
+}
+
+.filter-button {
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.5rem 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.filter-button:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.filter-options {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.3rem;
+    background-color: var(--background-secondary);
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    z-index: 50; /* Incrementato z-index per assicurarsi che appaia sopra altri elementi */
+    width: 180px;
+    overflow: hidden;
+}
+
+.filter-option {
+    width: 100%;
+    text-align: left;
+    padding: 0.8rem 1rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.filter-option:hover {
+    background-color: var(--background-primary);
+}
+
+.filter-option.selected {
+    background-color: rgba(0, 122, 255, 0.1);
+    font-weight: 500;
+}
+
+.dark-mode .filter-option.selected {
+    background-color: rgba(10, 132, 255, 0.2);
+}
+
+/* Adatta il bottone aggiungi */
+@media (max-width: 576px) {
+    .action-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    .filters-container {
+        width: 100%;
+    }
+
+    .filter-dropdown {
+        flex: 1;
+    }
+
+    .filter-button {
+        width: 100%;
+        justify-content: space-between;
+    }
 }
