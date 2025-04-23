@@ -1594,7 +1594,12 @@ document.addEventListener('DOMContentLoaded', function() {
             this.elements.modalConfirm.onclick = () => {
                 const fileInput = document.getElementById('import-file');
                 if (fileInput.files.length > 0) {
-                    this.importData(fileInput.files[0]);
+                    if(fileInput.files[0].name.startsWith("bullycar_backup")){
+                        this.importData(fileInput.files[0]);
+                    }else{
+                        this.showNotification('Errore', 'File errato', 'error');
+                        this.hideModal();
+                    }
                 }
             };
         },
