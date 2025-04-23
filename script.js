@@ -1224,18 +1224,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         },
-        
+
         openDocument: function(doc) {
-            // Apre il documento in un modal
-            this.showModal('Documento', `
-                <div class="pdf-container">
+            // Crea un visualizzatore a schermo intero per il documento
+            const viewer = document.createElement('div');
+            viewer.className = 'fullscreen-viewer';
+
+            // Aggiungi direttamente la classe del tema corrente
+            const isDarkMode = document.getElementById('app-container').classList.contains('dark-mode');
+            if (isDarkMode) {
+                viewer.classList.add('dark-mode');
+            } else {
+                viewer.classList.add('light-mode');
+            }
+
+            viewer.innerHTML = `
+                <div class="viewer-header">
+                    <div class="viewer-title">${doc.name}</div>
+                    <button class="icon-button close-viewer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="pdf-container fullscreen">
                     <iframe src="${doc.data}" frameborder="0"></iframe>
                 </div>
-            `);
-            
-            // Nascondi bottoni standard
-            this.elements.modalConfirm.style.display = 'none';
-            this.elements.modalCancel.textContent = 'Chiudi';
+            `;
+
+            // Aggiungi al body
+            document.body.appendChild(viewer);
+            document.body.style.overflow = 'hidden'; // Impedisce lo scroll del body
+
+            // Gestore di chiusura
+            viewer.querySelector('.close-viewer').addEventListener('click', () => {
+                document.body.removeChild(viewer);
+                document.body.style.overflow = ''; // Ripristina lo scroll
+            });
         },
         
         // Gestione promemoria

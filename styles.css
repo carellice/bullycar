@@ -1108,3 +1108,114 @@ header, main, .car-card, .detail-container, form, .modal, .notification {
 .dark-mode .danger-button:hover {
     background-color: #ff6961 !important;
 }
+
+/* Visualizzatore documento a schermo intero */
+.fullscreen-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-primary);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.viewer-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.pdf-container.fullscreen {
+    flex: 1;
+    height: auto;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+}
+
+.pdf-container.fullscreen iframe {
+    width: 100%;
+    height: 100%;
+}
+
+/* Correzione per il tema scuro nel visualizzatore documenti */
+.dark-mode .viewer-header {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.dark-mode .fullscreen-viewer {
+    background-color: var(--background-primary);
+}
+
+.dark-mode .pdf-container.fullscreen {
+    background-color: var(--background-primary);
+}
+
+.dark-mode .viewer-title {
+    color: var(--text-primary);
+}
+
+.dark-mode .close-viewer {
+    color: var(--accent-color);
+}
+
+/* Reset completo per il visualizzatore documenti in dark mode */
+.fullscreen-viewer.dark-mode {
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+}
+
+.fullscreen-viewer.dark-mode .viewer-header {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.fullscreen-viewer.dark-mode .pdf-container.fullscreen {
+    background-color: var(--background-primary);
+}
+
+.fullscreen-viewer.dark-mode .viewer-title {
+    color: var(--text-primary);
+}
+
+.fullscreen-viewer.dark-mode .close-viewer {
+    color: var(--accent-color);
+}
+
+/* Reset completo per il visualizzatore documenti in light mode */
+.fullscreen-viewer.light-mode {
+    background-color: #f2f2f7;
+    color: #000000;
+}
+
+.fullscreen-viewer.light-mode .viewer-header {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #d1d1d6;
+}
+
+.fullscreen-viewer.light-mode .pdf-container.fullscreen {
+    background-color: #f2f2f7;
+}
+
+.fullscreen-viewer.light-mode .viewer-title {
+    color: #000000;
+}
+
+.fullscreen-viewer.light-mode .close-viewer {
+    color: #007aff;
+}
