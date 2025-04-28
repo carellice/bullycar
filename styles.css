@@ -1500,3 +1500,28 @@ header, main, .car-card, .detail-container, form, .modal, .notification {
     max-height: 100%;
     object-fit: contain;
 }
+
+/* Stili per le opzioni di filtro tipo e anno */
+.type-filter-option,
+.year-filter-option {
+    width: 100%;
+    text-align: left;
+    padding: 0.8rem 1rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.type-filter-option:hover,
+.year-filter-option:hover {
+    background-color: var(--background-primary);
+}
+
+.type-filter-option.selected,
+.year-filter-option.selected {
+    background-color: rgba(0, 122, 255, 0.1);
+    font-weight: 500;
+}

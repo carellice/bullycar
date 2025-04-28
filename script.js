@@ -100,6 +100,56 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             this.currentMaintenanceFilter = 'all';
+            this.currentYearFilter = 'all';
+        },
+
+        // Funzione per popolare il filtro anni
+        populateYearFilter: function(car) {
+            if (!car || !car.maintenance || car.maintenance.length === 0) return;
+
+            // Raccogli tutti gli anni unici dalle date degli interventi
+            const years = new Set();
+            car.maintenance.forEach(m => {
+                if (m.date) {
+                    const year = new Date(m.date).getFullYear();
+                    years.add(year);
+                }
+            });
+
+            // Converti in array e ordina dal più recente
+            const yearsArray = Array.from(years).sort((a, b) => b - a);
+
+            // Popola il dropdown
+            const yearOptions = document.getElementById('year-filter-options');
+            yearOptions.innerHTML = '';
+
+            // Opzione "Tutti gli anni"
+            const allOption = document.createElement('button');
+            allOption.className = 'year-filter-option' + (this.currentYearFilter === 'all' ? ' selected' : '');
+            allOption.dataset.year = 'all';
+            allOption.textContent = 'Tutti gli anni';
+            yearOptions.appendChild(allOption);
+
+            // Opzioni per ciascun anno
+            yearsArray.forEach(year => {
+                const option = document.createElement('button');
+                option.className = 'year-filter-option' + (this.currentYearFilter === year.toString() ? ' selected' : '');
+                option.dataset.year = year;
+                option.textContent = year;
+                yearOptions.appendChild(option);
+            });
+        },
+
+        // Funzione per filtrare per anno
+        filterMaintenanceByYear: function(yearFilter) {
+            const car = this.getCarById(this.data.currentCarId);
+            if (!car) return;
+
+            // Memorizza il filtro corrente
+            this.currentYearFilter = yearFilter;
+
+            // Renderizza la lista filtrata
+            this.renderMaintenanceList(car);
         },
         
         // Binding degli eventi
@@ -249,6 +299,101 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     filterOption.classList.add('selected');
                     document.getElementById('current-filter').textContent = filterOption.textContent;
+                }
+            });
+
+            // Gestione toggle filtro tipo
+            const typeFilterBtn = document.getElementById('type-filter-btn');
+            if (typeFilterBtn) {
+                typeFilterBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const typeOptions = document.getElementById('type-filter-options');
+                    const yearOptions = document.getElementById('year-filter-options');
+
+                    // Se il menu è già aperto, lo chiudiamo
+                    if (!typeOptions.classList.contains('hidden')) {
+                        typeOptions.classList.add('hidden');
+                    } else {
+                        // Altrimenti lo apriamo e chiudiamo l'altro
+                        typeOptions.classList.remove('hidden');
+                        yearOptions.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Gestione toggle filtro anno
+            const yearFilterBtn = document.getElementById('year-filter-btn');
+            if (yearFilterBtn) {
+                yearFilterBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const yearOptions = document.getElementById('year-filter-options');
+                    const typeOptions = document.getElementById('type-filter-options');
+
+                    // Se il menu è già aperto, lo chiudiamo
+                    if (!yearOptions.classList.contains('hidden')) {
+                        yearOptions.classList.add('hidden');
+                    } else {
+                        // Altrimenti lo apriamo e chiudiamo l'altro
+                        yearOptions.classList.remove('hidden');
+                        typeOptions.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Gestione click opzioni filtro tipo
+            const typeOptions = document.getElementById('type-filter-options');
+            if (typeOptions) {
+                typeOptions.addEventListener('click', (e) => {
+                    const option = e.target.closest('.type-filter-option');  // Cambiato qui
+                    if (option) {
+                        const filterType = option.dataset.type;
+                        this.filterMaintenance(filterType);
+
+                        // Aggiorna UI
+                        typeOptions.querySelectorAll('.type-filter-option').forEach(opt => {  // Cambiato qui
+                            opt.classList.remove('selected');
+                        });
+                        option.classList.add('selected');
+                        document.getElementById('current-filter').textContent = option.textContent;
+
+                        // Chiudi il menu
+                        typeOptions.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Gestione click opzioni filtro anno
+            const yearOptions = document.getElementById('year-filter-options');
+            if (yearOptions) {
+                yearOptions.addEventListener('click', (e) => {
+                    const option = e.target.closest('.year-filter-option');  // Cambiato qui
+                    if (option) {
+                        const year = option.dataset.year;
+                        this.filterMaintenanceByYear(year);
+
+                        // Aggiorna UI
+                        yearOptions.querySelectorAll('.year-filter-option').forEach(opt => {  // Cambiato qui
+                            opt.classList.remove('selected');
+                        });
+                        option.classList.add('selected');
+                        document.getElementById('current-year-filter').textContent =
+                            year === 'all' ? 'Tutti gli anni' : year;
+
+                        // Chiudi il menu
+                        yearOptions.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Chiudi i menu quando si clicca altrove
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#type-filter-btn') &&
+                    !e.target.closest('#type-filter-options') &&
+                    !e.target.closest('#year-filter-btn') &&
+                    !e.target.closest('#year-filter-options')) {
+
+                    document.getElementById('type-filter-options')?.classList.add('hidden');
+                    document.getElementById('year-filter-options')?.classList.add('hidden');
                 }
             });
         },
@@ -441,8 +586,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return this.showGarage();
             }
 
-            // Resetta il filtro manutenzione
+            // Resetta i filtri
             this.currentMaintenanceFilter = 'all';
+            this.currentYearFilter = 'all';
 
             // Seleziona il filtro "Tutti"
             setTimeout(() => {
@@ -520,6 +666,11 @@ document.addEventListener('DOMContentLoaded', function() {
             this.renderRemindersList(car);
             
             this.showView(this.elements.carDetailView);
+
+            // Popola il filtro degli anni
+            setTimeout(() => {
+                this.populateYearFilter(car);
+            }, 100);
         },
 
         showMaintenanceForm: function(maintenance = null) {
@@ -1048,16 +1199,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!car.maintenance || car.maintenance.length === 0) {
                 container.innerHTML = `
-            <div class="empty-state">
-                <p>Nessun intervento registrato.</p>
-            </div>
-        `;
+                    <div class="empty-state">
+                        <p>Nessun intervento registrato.</p>
+                    </div>
+                `;
                 return;
             }
 
-            // Filtra per tipo se necessario
+            // Applica entrambi i filtri
             let maintenanceItems = [...car.maintenance];
 
+            // Filtro per tipo
             if (this.currentMaintenanceFilter && this.currentMaintenanceFilter !== 'all') {
                 if (this.currentMaintenanceFilter === 'custom') {
                     // Filtra per interventi personalizzati
@@ -1066,16 +1218,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Filtra per tipo specifico
                     maintenanceItems = maintenanceItems.filter(item => item.type === this.currentMaintenanceFilter);
                 }
+            }
 
-                // Mostra un messaggio se non ci sono interventi del tipo selezionato
-                if (maintenanceItems.length === 0) {
-                    container.innerHTML = `
-                <div class="empty-state">
-                    <p>Nessun intervento di tipo "${this.getMaintenanceTypeName(this.currentMaintenanceFilter)}" trovato.</p>
-                </div>
-            `;
-                    return;
+            // Filtro per anno
+            if (this.currentYearFilter && this.currentYearFilter !== 'all') {
+                maintenanceItems = maintenanceItems.filter(item => {
+                    if (!item.date) return false;
+                    const itemYear = new Date(item.date).getFullYear().toString();
+                    return itemYear === this.currentYearFilter;
+                });
+            }
+
+            // Mostra un messaggio se non ci sono interventi con i filtri applicati
+            if (maintenanceItems.length === 0) {
+                let message = "Nessun intervento trovato";
+
+                if (this.currentMaintenanceFilter !== 'all') {
+                    message += ` di tipo "${this.getMaintenanceTypeName(this.currentMaintenanceFilter)}"`;
                 }
+
+                if (this.currentYearFilter !== 'all') {
+                    message += ` nell'anno ${this.currentYearFilter}`;
+                }
+
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>${message}.</p>
+                    </div>
+                `;
+                return;
             }
 
             // Ordina per data (più recente prima)

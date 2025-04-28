@@ -155,22 +155,36 @@
                         <div class="action-header">
                             <h3>Interventi</h3>
                             <div class="filters-container">
-                                <div class="filter-dropdown">
-                                    <button class="filter-button">
+                                <!-- Filtro tipo manutenzione esistente -->
+                                <div class="filter-dropdown type-dropdown">
+                                    <button id="type-filter-btn" class="filter-button">
                                         <i class="fas fa-filter"></i>
                                         <span id="current-filter">Tutti</span>
                                         <i class="fas fa-chevron-down"></i>
                                     </button>
-                                    <div class="filter-options hidden">
-                                        <button class="filter-option selected" data-type="all">Tutti</button>
-                                        <button class="filter-option" data-type="assicurazione">Assicurazione</button>
-                                        <button class="filter-option" data-type="bollo">Bollo</button>
-                                        <button class="filter-option" data-type="gomme">Cambio gomme</button>
-                                        <button class="filter-option" data-type="custom">Personalizzati</button>
-                                        <button class="filter-option" data-type="revisione">Revisione</button>
-                                        <button class="filter-option" data-type="tagliando">Tagliando</button>
+                                    <div id="type-filter-options" class="filter-options hidden">
+                                        <button class="type-filter-option selected" data-type="all">Tutti</button>
+                                        <button class="type-filter-option" data-type="assicurazione">Assicurazione</button>
+                                        <button class="type-filter-option" data-type="bollo">Bollo</button>
+                                        <button class="type-filter-option" data-type="gomme">Cambio gomme</button>
+                                        <button class="type-filter-option" data-type="custom">Personalizzati</button>
+                                        <button class="type-filter-option" data-type="revisione">Revisione</button>
+                                        <button class="type-filter-option" data-type="tagliando">Tagliando</button>
                                     </div>
                                 </div>
+
+                                <!-- Nuovo filtro per anno -->
+                                <div class="filter-dropdown year-dropdown">
+                                    <button id="year-filter-btn" class="filter-button">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span id="current-year-filter">Tutti gli anni</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div id="year-filter-options" class="filter-options hidden">
+                                        <!-- Opzioni per gli anni verranno aggiunte via JavaScript -->
+                                    </div>
+                                </div>
+
                                 <button id="add-maintenance-button" class="primary-button">
                                     <i class="fas fa-plus"></i> Aggiungi
                                 </button>
