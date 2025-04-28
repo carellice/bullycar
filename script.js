@@ -188,7 +188,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             // Eventi tema
-            this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+            this.elements.themeToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleThemeMenu();
+            });
             
             // Eventi modal
             this.elements.closeModal.addEventListener('click', () => this.hideModal());
@@ -240,18 +243,30 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         toggleSettingsMenu: function() {
-            // Rimuovi menu esistente se c'è
-            document.querySelector('.settings-menu')?.remove();
+            // Chiudi il menu del tema se è aperto
+            const themeMenu = document.querySelector('.theme-menu');
+            if (themeMenu) {
+                themeMenu.classList.add('hidden');
+            }
 
-            // Crea il menu impostazioni
+            // Ottieni il menu esistente delle impostazioni
+            const existingMenu = document.querySelector('.settings-menu');
+
+            // Se esiste già un menu, semplicemente lo rimuovi (toggle)
+            if (existingMenu) {
+                existingMenu.remove();
+                return;
+            }
+
+            // Resto del codice per creare il menu...
             const menu = document.createElement('div');
             menu.className = 'settings-menu';
 
             menu.innerHTML = `
-        <button class="settings-option danger" id="reset-data">
-            <i class="fas fa-trash-alt"></i> Cancella tutti i dati
-        </button>
-    `;
+                <button class="settings-option danger" id="reset-data">
+                    <i class="fas fa-trash-alt"></i> Cancella tutti i dati
+                </button>
+            `;
 
             // Previeni la propagazione del click
             menu.addEventListener('click', (e) => {
@@ -1660,9 +1675,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Aggiungi l'event listener per il dropdown del tema
             const themeToggle = this.elements.themeToggle;
             const themeMenu = document.querySelector('.theme-menu');
-            
+
             themeToggle.addEventListener('click', (e) => {
                 e.stopPropagation();
+
+                // Chiudi il menu delle impostazioni se è aperto
+                const settingsMenu = document.querySelector('.settings-menu');
+                if (settingsMenu) {
+                    settingsMenu.remove();
+                }
+
+                // Toggle del menu del tema
                 themeMenu.classList.toggle('hidden');
             });
             
