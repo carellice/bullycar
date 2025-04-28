@@ -1341,75 +1341,18 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         openFile: function(file) {
-            if (file.type.startsWith('image/')) {
-                // Visualizzatore immagine a schermo intero
-                const viewer = document.createElement('div');
-                viewer.className = 'fullscreen-viewer';
+            // Crea un link per il download
+            const a = document.createElement('a');
+            a.href = file.data;
+            a.download = file.name; // Usa il nome originale del file
 
-                // Aggiungi direttamente la classe del tema corrente
-                const isDarkMode = document.getElementById('app-container').classList.contains('dark-mode');
-                if (isDarkMode) {
-                    viewer.classList.add('dark-mode');
-                } else {
-                    viewer.classList.add('light-mode');
-                }
+            // Aggiungi l'elemento al DOM, esegui il click e rimuovilo
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
 
-                viewer.innerHTML = `
-            <div class="viewer-header">
-                <div class="viewer-title">${file.name}</div>
-                <button class="icon-button close-viewer">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="image-container">
-                <img src="${file.data}" alt="${file.name}">
-            </div>
-        `;
-
-                // Aggiungi al body
-                document.body.appendChild(viewer);
-                document.body.style.overflow = 'hidden'; // Impedisce lo scroll del body
-
-                // Gestore di chiusura
-                viewer.querySelector('.close-viewer').addEventListener('click', () => {
-                    document.body.removeChild(viewer);
-                    document.body.style.overflow = ''; // Ripristina lo scroll
-                });
-            } else {
-                // Visualizzatore documento
-                const viewer = document.createElement('div');
-                viewer.className = 'fullscreen-viewer';
-
-                // Aggiungi direttamente la classe del tema corrente
-                const isDarkMode = document.getElementById('app-container').classList.contains('dark-mode');
-                if (isDarkMode) {
-                    viewer.classList.add('dark-mode');
-                } else {
-                    viewer.classList.add('light-mode');
-                }
-
-                viewer.innerHTML = `
-            <div class="viewer-header">
-                <div class="viewer-title">${file.name}</div>
-                <button class="icon-button close-viewer">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="pdf-container fullscreen">
-                <iframe src="${file.data}" frameborder="0"></iframe>
-            </div>
-        `;
-
-                // Aggiungi al body
-                document.body.appendChild(viewer);
-                document.body.style.overflow = 'hidden'; // Impedisce lo scroll del body
-
-                // Gestore di chiusura
-                viewer.querySelector('.close-viewer').addEventListener('click', () => {
-                    document.body.removeChild(viewer);
-                    document.body.style.overflow = ''; // Ripristina lo scroll
-                });
-            }
+            // Mostra una notifica di conferma
+            this.showNotification('Download', `Download di "${file.name}" avviato`, 'success');
         },
         
         renderDocumentsList: function(car) {
@@ -1672,39 +1615,18 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         openDocument: function(doc) {
-            // Crea un visualizzatore a schermo intero per il documento
-            const viewer = document.createElement('div');
-            viewer.className = 'fullscreen-viewer';
+            // Crea un link per il download
+            const a = document.createElement('a');
+            a.href = doc.data;
+            a.download = doc.name; // Usa il nome originale del file
 
-            // Aggiungi direttamente la classe del tema corrente
-            const isDarkMode = document.getElementById('app-container').classList.contains('dark-mode');
-            if (isDarkMode) {
-                viewer.classList.add('dark-mode');
-            } else {
-                viewer.classList.add('light-mode');
-            }
+            // Aggiungi l'elemento al DOM, esegui il click e rimuovilo
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
 
-            viewer.innerHTML = `
-                <div class="viewer-header">
-                    <div class="viewer-title">${doc.name}</div>
-                    <button class="icon-button close-viewer">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="pdf-container fullscreen">
-                    <iframe src="${doc.data}" frameborder="0"></iframe>
-                </div>
-            `;
-
-            // Aggiungi al body
-            document.body.appendChild(viewer);
-            document.body.style.overflow = 'hidden'; // Impedisce lo scroll del body
-
-            // Gestore di chiusura
-            viewer.querySelector('.close-viewer').addEventListener('click', () => {
-                document.body.removeChild(viewer);
-                document.body.style.overflow = ''; // Ripristina lo scroll
-            });
+            // Mostra una notifica di conferma
+            this.showNotification('Download', `Download di "${doc.name}" avviato`, 'success');
         },
         
         // Gestione promemoria
