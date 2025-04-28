@@ -1525,3 +1525,135 @@ header, main, .car-card, .detail-container, form, .modal, .notification {
     background-color: rgba(0, 122, 255, 0.1);
     font-weight: 500;
 }
+
+/* Animazione per le card auto */
+.car-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.car-card:hover, .car-card:active {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px var(--shadow-color);
+}
+
+/* Animazione per l'immagine dell'auto quando si carica */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.car-image img {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Animazioni per i bottoni */
+.primary-button, .secondary-button, .icon-button {
+    transition: transform 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.primary-button:active, .secondary-button:active, .icon-button:active {
+    transform: scale(0.95);
+}
+
+/* Effetto ripple per i bottoni primari */
+.primary-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.primary-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.primary-button:active::after {
+    animation: ripple 0.4s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0) translate(-50%, -50%);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20) translate(-50%, -50%);
+        opacity: 0;
+    }
+}
+
+/* Animazione per i form */
+.form-group {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Animazione sequenziale per i campi del form */
+form .form-group:nth-child(1) { animation-delay: 0.05s; }
+form .form-group:nth-child(2) { animation-delay: 0.1s; }
+form .form-group:nth-child(3) { animation-delay: 0.15s; }
+form .form-group:nth-child(4) { animation-delay: 0.2s; }
+form .form-group:nth-child(5) { animation-delay: 0.25s; }
+form .form-group:nth-child(6) { animation-delay: 0.3s; }
+form .form-group:nth-child(7) { animation-delay: 0.35s; }
+form .form-group:nth-child(8) { animation-delay: 0.4s; }
+form .form-group:nth-child(9) { animation-delay: 0.45s; }
+
+/* Animazione per i dettagli auto */
+.car-info-grid {
+    opacity: 0;
+    animation: fadeSlideUp 0.25s ease forwards; /* Ridotto da 0.5s a 0.25s */
+    animation-delay: 0.1s; /* Ridotto da 0.2s a 0.1s */
+}
+
+.tabs {
+    opacity: 0;
+    animation: fadeSlideUp 0.25s ease forwards; /* Ridotto da 0.5s a 0.25s */
+    animation-delay: 0.15s; /* Ridotto da 0.3s a 0.15s */
+}
+
+.tab-content {
+    opacity: 0;
+    animation: fadeSlideUp 0.25s ease forwards; /* Ridotto da 0.5s a 0.25s */
+    animation-delay: 0.2s; /* Ridotto da 0.4s a 0.2s */
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animazione per il modal - CORREZIONE */
+#modal-container {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#modal-container.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal {
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+#modal-container.visible .modal {
+    transform: translateY(0) scale(1);
+}

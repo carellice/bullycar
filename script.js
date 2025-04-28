@@ -2024,17 +2024,30 @@ document.addEventListener('DOMContentLoaded', function() {
         showModal: function(title, content) {
             this.elements.modalTitle.textContent = title;
             this.elements.modalContent.innerHTML = content;
+
+            // Rimuovi la classe 'hidden' e aggiungi 'visible'
             this.elements.modalContainer.classList.remove('hidden');
+
+            // Piccolo ritardo per assicurarsi che il DOM sia stato aggiornato
+            setTimeout(() => {
+                this.elements.modalContainer.classList.add('visible');
+            }, 10);
 
             // Reset bottoni
             this.elements.modalConfirm.style.display = 'block';
-            this.elements.modalConfirm.textContent = 'Conferma'; // Reset al testo predefinito
-            this.elements.modalConfirm.classList.remove('danger-button'); // Rimuovi classe danger
+            this.elements.modalConfirm.textContent = 'Conferma';
+            this.elements.modalConfirm.classList.remove('danger-button');
             this.elements.modalCancel.textContent = 'Annulla';
         },
-        
+
         hideModal: function() {
-            this.elements.modalContainer.classList.add('hidden');
+            // Rimuovi 'visible' prima
+            this.elements.modalContainer.classList.remove('visible');
+
+            // Aggiungi 'hidden' dopo un ritardo per permettere l'animazione
+            setTimeout(() => {
+                this.elements.modalContainer.classList.add('hidden');
+            }, 300); // Attendi che la transizione sia completa
         },
         
         // Notifiche
