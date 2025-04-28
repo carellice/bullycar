@@ -284,6 +284,29 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label for="maintenance-files">Foto e documenti</label>
+                        <div class="file-uploads-container">
+                            <div class="file-upload-preview">
+                                <div id="maintenance-files-preview" class="files-preview-grid">
+                                    <!-- Le anteprime dei file verranno inserite qui -->
+                                </div>
+                            </div>
+                            <div class="file-upload-buttons">
+                                <label class="file-upload-button">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Foto</span>
+                                    <input type="file" id="maintenance-photo" accept="image/*" multiple>
+                                </label>
+                                <label class="file-upload-button">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Documento</span>
+                                    <input type="file" id="maintenance-doc" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" multiple>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-buttons">
                         <button type="button" class="secondary-button cancel-form">Annulla</button>
                         <button type="submit" class="primary-button">Salva</button>

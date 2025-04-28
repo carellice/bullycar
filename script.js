@@ -1,4 +1,6 @@
 // BullyCar - Main JavaScript
+
+let maintenanceFiles = [];
 document.addEventListener('DOMContentLoaded', function() {
     // Inizializzazione dell'app
     const app = {
@@ -124,6 +126,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.querySelectorAll('.cancel-form').forEach(button => {
                 button.addEventListener('click', () => this.showGarage());
+            });
+
+            // Eventi upload file manutenzione
+            document.getElementById('maintenance-photo').addEventListener('change', (e) => {
+                this.handleMaintenanceFileUpload(e.target.files, 'image');
+            });
+
+            document.getElementById('maintenance-doc').addEventListener('change', (e) => {
+                this.handleMaintenanceFileUpload(e.target.files, 'document');
             });
             
             // Eventi immagine
@@ -510,10 +521,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             this.showView(this.elements.carDetailView);
         },
-        
+
         showMaintenanceForm: function(maintenance = null) {
             const form = this.elements.maintenanceForm;
-            
+
             // Reset form
             form.reset();
             this.elements.customTypeContainer.classList.add('hidden');
@@ -521,41 +532,51 @@ document.addEventListener('DOMContentLoaded', function() {
             this.elements.dateReminder.classList.remove('hidden');
             this.elements.intervalReminder.classList.add('hidden');
             this.elements.mileageReminder.classList.add('hidden');
-            
+
+            // Reset files array
+            maintenanceFiles = [];
+            document.getElementById('maintenance-files-preview').innerHTML = '';
+
             if (maintenance) {
                 // Modifica manutenzione esistente
                 form.dataset.maintenanceId = maintenance.id;
-                
+
                 // Popola form
                 this.elements.maintenanceType.value = maintenance.type;
                 if (maintenance.type === 'custom') {
                     document.getElementById('custom-maintenance-type').value = maintenance.customType;
                     this.elements.customTypeContainer.classList.remove('hidden');
                 }
-                
+
                 document.getElementById('maintenance-date').value = maintenance.date;
                 document.getElementById('maintenance-mileage').value = maintenance.mileage;
                 document.getElementById('maintenance-cost').value = maintenance.cost;
                 document.getElementById('maintenance-notes').value = maintenance.notes;
-                
+
+                // Carica file esistenti
+                if (maintenance.files && maintenance.files.length > 0) {
+                    maintenanceFiles = [...maintenance.files];
+                    this.renderFilesPreviews();
+                }
+
                 // Promemoria
                 if (maintenance.reminder) {
                     this.elements.maintenanceReminder.checked = true;
                     this.elements.reminderSettings.classList.remove('hidden');
-                    
+
                     this.elements.reminderType.value = maintenance.reminder.type;
-                    
+
                     if (maintenance.reminder.type === 'date' || maintenance.reminder.type === 'both') {
                         document.getElementById('reminder-date').value = maintenance.reminder.date;
                         this.elements.dateReminder.classList.remove('hidden');
                     }
-                    
+
                     if (maintenance.reminder.type === 'interval') {
                         document.getElementById('reminder-interval-value').value = maintenance.reminder.intervalValue;
                         document.getElementById('reminder-interval-unit').value = maintenance.reminder.intervalUnit;
                         this.elements.intervalReminder.classList.remove('hidden');
                     }
-                    
+
                     if (maintenance.reminder.type === 'mileage' || maintenance.reminder.type === 'both') {
                         document.getElementById('reminder-mileage').value = maintenance.reminder.mileage;
                         this.elements.mileageReminder.classList.remove('hidden');
@@ -564,19 +585,62 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Nuova manutenzione
                 form.dataset.maintenanceId = '';
-                
+
                 // Imposta data odierna
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('maintenance-date').value = today;
-                
+
                 // Imposta chilometraggio attuale
                 const car = this.getCarById(this.data.currentCarId);
                 if (car) {
                     document.getElementById('maintenance-mileage').value = car.mileage;
                 }
             }
-            
+
             this.showView(this.elements.maintenanceFormView);
+        },
+
+        renderFilesPreviews: function() {
+            const container = document.getElementById('maintenance-files-preview');
+            container.innerHTML = '';
+
+            maintenanceFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-preview-item';
+
+                if (file.type.startsWith('image/')) {
+                    // Anteprima immagine
+                    fileItem.innerHTML = `
+                <img src="${file.data}" alt="Foto">
+                <button class="delete-file" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+                } else {
+                    // Anteprima documento
+                    fileItem.innerHTML = `
+                <div class="file-icon">
+                    <i class="fas fa-file-alt"></i>
+                    <span>${file.name}</span>
+                </div>
+                <button class="delete-file" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+                }
+
+                container.appendChild(fileItem);
+            });
+
+            // Aggiungi event listener per i pulsanti di eliminazione
+            document.querySelectorAll('.delete-file').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(button.dataset.index);
+                    maintenanceFiles.splice(index, 1);
+                    this.renderFilesPreviews();
+                });
+            });
         },
         
         // Gestione form
@@ -664,21 +728,21 @@ document.addEventListener('DOMContentLoaded', function() {
             this.updateRemindersBadge(); 
             this.showGarage();
         },
-        
+
         saveMaintenanceForm: function() {
             const form = this.elements.maintenanceForm;
             const maintenanceId = form.dataset.maintenanceId;
             const car = this.getCarById(this.data.currentCarId);
-            
+
             if (!car) {
                 this.showNotification('Errore', 'Auto non trovata', 'error');
                 return;
             }
-            
+
             // Tipo intervento
             let type = this.elements.maintenanceType.value;
             let customType = '';
-            
+
             if (type === 'custom') {
                 customType = document.getElementById('custom-maintenance-type').value;
                 if (!customType) {
@@ -686,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
             }
-            
+
             // Dati intervento
             const maintenanceData = {
                 type: type,
@@ -694,26 +758,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 date: document.getElementById('maintenance-date').value,
                 mileage: parseInt(document.getElementById('maintenance-mileage').value) || 0,
                 cost: parseFloat(document.getElementById('maintenance-cost').value) || 0,
-                notes: document.getElementById('maintenance-notes').value
+                notes: document.getElementById('maintenance-notes').value,
+                files: maintenanceFiles // Aggiungi i file
             };
-            
+
             // Promemoria
             if (this.elements.maintenanceReminder.checked) {
                 const reminderType = this.elements.reminderType.value;
-                
+
                 maintenanceData.reminder = {
                     type: reminderType,
                     createdAt: new Date().toISOString()
                 };
-                
+
                 if (reminderType === 'date' || reminderType === 'both') {
                     maintenanceData.reminder.date = document.getElementById('reminder-date').value;
                 }
-                
+
                 if (reminderType === 'interval') {
                     maintenanceData.reminder.intervalValue = parseInt(document.getElementById('reminder-interval-value').value) || 1;
                     maintenanceData.reminder.intervalUnit = document.getElementById('reminder-interval-unit').value;
-                    
+
                     // Calcola data promemoria basata sull'intervallo
                     const date = new Date(maintenanceData.date);
                     if (maintenanceData.reminder.intervalUnit === 'month') {
@@ -721,20 +786,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         date.setFullYear(date.getFullYear() + maintenanceData.reminder.intervalValue);
                     }
-                    
+
                     maintenanceData.reminder.date = date.toISOString().split('T')[0];
                 }
-                
+
                 if (reminderType === 'mileage' || reminderType === 'both') {
                     maintenanceData.reminder.mileage = parseInt(document.getElementById('reminder-mileage').value) || 0;
                 }
             }
-            
+
             // Aggiorna chilometraggio auto se quello dell'intervento è superiore
             if (maintenanceData.mileage > car.mileage) {
                 car.mileage = maintenanceData.mileage;
             }
-            
+
             if (maintenanceId) {
                 // Aggiorna intervento esistente
                 const index = car.maintenance.findIndex(m => m.id === parseInt(maintenanceId));
@@ -748,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintenanceData.id = Date.now();
                 car.maintenance.push(maintenanceData);
                 this.showNotification('Successo', 'Intervento aggiunto con successo', 'success');
-                
+
                 // Genera scadenze automatiche per revisione/bollo
                 if (type === 'revisione') {
                     this.generateNextRevisionReminder(car, maintenanceData);
@@ -756,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.generateNextBolloReminder(car, maintenanceData);
                 }
             }
-            
+
             this.saveData();
             this.updateRemindersBadge();
             this.showCarDetail(car.id);
@@ -976,17 +1041,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return alerts;
         },
-        
+
         renderMaintenanceList: function(car) {
             const container = this.elements.maintenanceList;
             container.innerHTML = '';
 
             if (!car.maintenance || car.maintenance.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <p>Nessun intervento registrato.</p>
-                    </div>
-                `;
+            <div class="empty-state">
+                <p>Nessun intervento registrato.</p>
+            </div>
+        `;
                 return;
             }
 
@@ -1017,50 +1082,163 @@ document.addEventListener('DOMContentLoaded', function() {
             const sortedMaintenance = maintenanceItems.sort((a, b) =>
                 new Date(b.date) - new Date(a.date)
             );
-            
+
             sortedMaintenance.forEach(item => {
                 const maintenanceItem = document.createElement('div');
                 maintenanceItem.className = 'maintenance-item';
-                
+
                 const typeName = item.type === 'custom' ? item.customType : this.getMaintenanceTypeName(item.type);
-                
+
+                let filesHtml = '';
+                if (item.files && item.files.length > 0) {
+                    filesHtml = `
+                <div class="maintenance-files">
+                    ${item.files.map((file, index) => {
+                        if (file.type.startsWith('image/')) {
+                            return `
+                                <div class="maintenance-file-item" data-maintenance-id="${item.id}" data-file-index="${index}">
+                                    <img src="${file.data}" alt="Foto">
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="maintenance-file-item" data-maintenance-id="${item.id}" data-file-index="${index}">
+                                    <div class="file-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                        <span>${file.name.length > 10 ? file.name.substring(0, 8) + '...' : file.name}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }).join('')}
+                </div>
+            `;
+                }
+
                 maintenanceItem.innerHTML = `
-                    <div class="maintenance-header">
-                        <div>
-                            <div class="maintenance-title">${typeName}</div>
-                            <div class="maintenance-date">${this.formatDate(item.date)} - ${item.mileage.toLocaleString()} km</div>
-                        </div>
-                        <div class="maintenance-cost">€ ${item.cost.toFixed(2)}</div>
-                    </div>
-                    ${item.notes ? `<div class="maintenance-details">${item.notes}</div>` : ''}
-                    ${item.reminder ? `
-                        <div class="maintenance-details">
-                            <strong>Prossimo intervento:</strong> ${this.formatReminderInfo(item.reminder)}
-                        </div>
-                    ` : ''}
-                    <div class="maintenance-controls">
-                        <button class="icon-button edit-maintenance" data-id="${item.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="icon-button delete-maintenance" data-id="${item.id}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                
+            <div class="maintenance-header">
+                <div>
+                    <div class="maintenance-title">${typeName}</div>
+                    <div class="maintenance-date">${this.formatDate(item.date)} - ${item.mileage.toLocaleString()} km</div>
+                </div>
+                <div class="maintenance-cost">€ ${item.cost.toFixed(2)}</div>
+            </div>
+            ${item.notes ? `<div class="maintenance-details">${item.notes}</div>` : ''}
+            ${filesHtml}
+            ${item.reminder ? `
+                <div class="maintenance-details">
+                    <strong>Prossimo intervento:</strong> ${this.formatReminderInfo(item.reminder)}
+                </div>
+            ` : ''}
+            <div class="maintenance-controls">
+                <button class="icon-button edit-maintenance" data-id="${item.id}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="icon-button delete-maintenance" data-id="${item.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+
                 // Aggiungi event listener
                 maintenanceItem.querySelector('.edit-maintenance').addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.showMaintenanceForm(item);
                 });
-                
+
                 maintenanceItem.querySelector('.delete-maintenance').addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.showDeleteMaintenanceConfirmation(item.id);
                 });
-                
+
                 container.appendChild(maintenanceItem);
             });
+
+            // Aggiungi event listener per i file
+            document.querySelectorAll('.maintenance-file-item').forEach(fileItem => {
+                fileItem.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const maintenanceId = parseInt(fileItem.dataset.maintenanceId);
+                    const fileIndex = parseInt(fileItem.dataset.fileIndex);
+
+                    const maintenance = car.maintenance.find(m => m.id === maintenanceId);
+                    if (maintenance && maintenance.files && maintenance.files[fileIndex]) {
+                        this.openFile(maintenance.files[fileIndex]);
+                    }
+                });
+            });
+        },
+
+        openFile: function(file) {
+            if (file.type.startsWith('image/')) {
+                // Visualizzatore immagine a schermo intero
+                const viewer = document.createElement('div');
+                viewer.className = 'fullscreen-viewer';
+
+                // Aggiungi direttamente la classe del tema corrente
+                const isDarkMode = document.getElementById('app-container').classList.contains('dark-mode');
+                if (isDarkMode) {
+                    viewer.classList.add('dark-mode');
+                } else {
+                    viewer.classList.add('light-mode');
+                }
+
+                viewer.innerHTML = `
+            <div class="viewer-header">
+                <div class="viewer-title">${file.name}</div>
+                <button class="icon-button close-viewer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="image-container">
+                <img src="${file.data}" alt="${file.name}">
+            </div>
+        `;
+
+                // Aggiungi al body
+                document.body.appendChild(viewer);
+                document.body.style.overflow = 'hidden'; // Impedisce lo scroll del body
+
+                // Gestore di chiusura
+                viewer.querySelector('.close-viewer').addEventListener('click', () => {
+                    document.body.removeChild(viewer);
+                    document.body.style.overflow = ''; // Ripristina lo scroll
+                });
+            } else {
+                // Visualizzatore documento
+                const viewer = document.createElement('div');
+                viewer.className = 'fullscreen-viewer';
+
+                // Aggiungi direttamente la classe del tema corrente
+                const isDarkMode = document.getElementById('app-container').classList.contains('dark-mode');
+                if (isDarkMode) {
+                    viewer.classList.add('dark-mode');
+                } else {
+                    viewer.classList.add('light-mode');
+                }
+
+                viewer.innerHTML = `
+            <div class="viewer-header">
+                <div class="viewer-title">${file.name}</div>
+                <button class="icon-button close-viewer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="pdf-container fullscreen">
+                <iframe src="${file.data}" frameborder="0"></iframe>
+            </div>
+        `;
+
+                // Aggiungi al body
+                document.body.appendChild(viewer);
+                document.body.style.overflow = 'hidden'; // Impedisce lo scroll del body
+
+                // Gestore di chiusura
+                viewer.querySelector('.close-viewer').addEventListener('click', () => {
+                    document.body.removeChild(viewer);
+                    document.body.style.overflow = ''; // Ripristina lo scroll
+                });
+            }
         },
         
         renderDocumentsList: function(car) {
@@ -1815,6 +1993,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
+            });
+        },
+
+        handleMaintenanceFileUpload: function(files, fileType) {
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    const fileData = {
+                        id: Date.now() + Math.random().toString(36).substr(2, 9),
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: e.target.result,
+                        date: new Date().toISOString()
+                    };
+
+                    maintenanceFiles.push(fileData);
+                    this.renderFilesPreviews();
+                };
+
+                reader.readAsDataURL(file);
             });
         },
         

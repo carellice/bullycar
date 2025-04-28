@@ -1326,3 +1326,177 @@ header, main, .car-card, .detail-container, form, .modal, .notification {
         justify-content: space-between;
     }
 }
+
+/* Stile per l'upload dei file nella manutenzione */
+.file-uploads-container {
+    margin-top: 0.5rem;
+}
+
+.file-upload-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.file-upload-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-primary);
+    border: 1px dashed var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100px;
+    height: 100px;
+}
+
+.file-upload-button:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.file-upload-button i {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.file-upload-button span {
+    font-size: 0.8rem;
+}
+
+.file-upload-button input[type="file"] {
+    display: none;
+}
+
+.files-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.file-preview-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-color);
+}
+
+.file-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.file-preview-item .file-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.file-preview-item .file-icon i {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: 0.3rem;
+}
+
+.file-preview-item .file-icon span {
+    font-size: 0.7rem;
+    text-align: center;
+    padding: 0 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.file-preview-item .delete-file {
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Stile per visualizzare i file nella vista manutenzione */
+.maintenance-files {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+}
+
+.maintenance-file-item {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+}
+
+.maintenance-file-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.maintenance-file-item .file-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background-primary);
+}
+
+.maintenance-file-item .file-icon i {
+    font-size: 1.5rem;
+    color: var(--accent-color);
+    margin-bottom: 0.2rem;
+}
+
+.maintenance-file-item .file-icon span {
+    font-size: 0.6rem;
+    text-align: center;
+    padding: 0 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Contenitore per visualizzare l'immagine a schermo intero */
+.image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 60px);
+    padding: 1rem;
+    overflow: auto;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
