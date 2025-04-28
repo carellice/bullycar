@@ -1657,3 +1657,20 @@ form .form-group:nth-child(9) { animation-delay: 0.45s; }
 #modal-container.visible .modal {
     transform: translateY(0) scale(1);
 }
+
+/* Rende tutto il testo non selezionabile */
+body, div, p, span, h1, h2, h3, h4, h5, h6, button, a, label, .car-card,
+.tab-content, .maintenance-item, .document-item, .reminder-item {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Ripristina la selezione del testo nei campi di input */
+input, textarea, select, [contenteditable="true"] {
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+}
