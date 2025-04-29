@@ -1,5 +1,5 @@
 // Nome della cache
-const CACHE_NAME = 'bullycar-cache-v4';
+const CACHE_NAME = 'bullycar-cache-v5';
 
 // File da memorizzare nella cache
 const urlsToCache = [
