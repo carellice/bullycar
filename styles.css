@@ -1710,3 +1710,151 @@ input, textarea, select, [contenteditable="true"] {
         max-width: none;
     }
 }
+
+/* Stile per l'utente loggato */
+.user-info {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-primary);
+    border-radius: 20px;
+    padding: 0.3rem 0.6rem;
+    margin-right: 0.5rem;
+}
+
+.user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.user-name {
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Stile per il loader */
+#loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+}
+
+#loader-container.visible {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--modal-background);
+}
+
+.loader-content {
+    position: relative;
+    background-color: var(--background-secondary);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+}
+
+.loader-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid var(--accent-color);
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+}
+
+.dark-mode .loader-spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: var(--accent-color);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loader-message {
+    font-weight: 600;
+}
+
+/* Adatta per dispositivi mobile */
+@media (max-width: 768px) {
+    .user-name {
+        display: none;
+    }
+
+    .user-info {
+        padding: 0.3rem;
+    }
+}
+
+/* Stile migliorato per l'avatar utente e fallback */
+.user-info {
+    display: flex;
+    align-items: center;
+    background-color: var(--background-primary);
+    border-radius: 20px;
+    padding: 0.3rem 0.6rem;
+    margin-right: 0.5rem;
+}
+
+.user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    object-fit: cover; /* Mantiene le proporzioni dell'immagine */
+}
+
+.user-name {
+    font-size: 0.85rem;
+    margin-right: 0.5rem;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Icona utente fallback quando l'avatar non è disponibile */
+.user-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    background-color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+}
+
+.user-icon i {
+    font-size: 0.8rem;
+}
+
+/* Stilizzazione del pulsante logout */
+#logout-btn {
+    padding: 0;
+    width: 28px;
+    height: 28px;
+}

@@ -1,6 +1,7 @@
 // BullyCar - Main JavaScript
 
 let maintenanceFiles = [];
+let currentUser = null;
 document.addEventListener('DOMContentLoaded', function() {
     // Inizializzazione dell'app
     const app = {
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.renderCars();
             this.checkReminders();
             this.loadTheme();
+            this.initFirebase();
             this.updateRemindersBadge();
 
             // Registra il service worker
@@ -101,6 +103,619 @@ document.addEventListener('DOMContentLoaded', function() {
 
             this.currentMaintenanceFilter = 'all';
             this.currentYearFilter = 'all';
+        },
+
+        // Inizializza Firebase e controlla lo stato di autenticazione
+        initFirebase: function() {
+            try {
+                // Inizializza l'app Firebase usando la configurazione globale
+                if (typeof firebase !== 'undefined' && firebaseConfig) {
+                    // Inizializza Firebase se non è già inizializzato
+                    if (!firebase.apps || !firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+
+                    // Ottieni i servizi
+                    this.auth = firebase.auth();
+                    this.db = firebase.firestore();
+
+                    // Ascolta i cambiamenti di autenticazione
+                    this.auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            // L'utente è loggato
+                            currentUser = user;
+                            this.updateLoginStatus(true);
+                            console.log("Utente autenticato:", user.displayName);
+                        } else {
+                            // L'utente non è loggato
+                            currentUser = null;
+                            this.updateLoginStatus(false);
+                            console.log("Utente non autenticato");
+                        }
+                    });
+
+                    console.log("Firebase inizializzato con successo");
+                } else {
+                    console.warn("Firebase non è definito o manca la configurazione");
+                    this.updateLoginStatus(false);
+                }
+            } catch (error) {
+                console.error("Errore nell'inizializzazione di Firebase:", error);
+                this.updateLoginStatus(false);
+            }
+        },
+
+        // Aggiorna l'interfaccia utente in base allo stato di login
+        updateLoginStatus: function(isLoggedIn) {
+            const cloudBackupBtn = document.getElementById('cloud-backup-btn');
+            const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
+            const loginBtn = document.getElementById('login-btn');
+            const userInfoEl = document.getElementById('user-info');
+
+            // Se gli elementi non esistono, esci dalla funzione
+            if (!cloudBackupBtn || !cloudRestoreBtn || !loginBtn || !userInfoEl) {
+                console.warn("Elementi UI per Firebase non trovati");
+                return;
+            }
+
+            if (isLoggedIn && currentUser) {
+                // Mostra pulsanti di backup/ripristino cloud
+                cloudBackupBtn.classList.remove('hidden');
+                cloudRestoreBtn.classList.remove('hidden');
+
+                // Aggiorna informazioni utente
+                userInfoEl.classList.remove('hidden');
+                const userNameEl = userInfoEl.querySelector('.user-name');
+                const userAvatarEl = userInfoEl.querySelector('.user-avatar');
+
+                if (userNameEl) userNameEl.textContent = currentUser.displayName || 'Utente';
+
+                // Gestisci l'avatar in modo più robusto
+                if (userAvatarEl) {
+                    if (currentUser.photoURL) {
+                        // Mostra l'avatar e gestisci eventuali errori
+                        userAvatarEl.src = currentUser.photoURL;
+                        userAvatarEl.style.display = 'block';
+
+                        // Gestisci errori di caricamento dell'immagine
+                        userAvatarEl.onerror = function() {
+                            // Se l'immagine non si carica, usa l'icona predefinita
+                            userAvatarEl.style.display = 'none';
+                            console.warn('Impossibile caricare l\'avatar utente');
+
+                            // Crea un'icona utente al suo posto
+                            const iconContainer = document.createElement('div');
+                            iconContainer.className = 'user-icon';
+                            iconContainer.innerHTML = '<i class="fas fa-user"></i>';
+
+                            // Rimuovi l'icona esistente se già presente
+                            const existingIcon = userInfoEl.querySelector('.user-icon');
+                            if (existingIcon) {
+                                userInfoEl.removeChild(existingIcon);
+                            }
+
+                            // Inserisci prima dell'elemento nome utente
+                            if (userNameEl) {
+                                userInfoEl.insertBefore(iconContainer, userNameEl);
+                            } else {
+                                userInfoEl.appendChild(iconContainer);
+                            }
+                        };
+                    } else {
+                        // Nessun photoURL disponibile, nascondi l'img e mostra un'icona
+                        userAvatarEl.style.display = 'none';
+
+                        // Crea un'icona utente al suo posto
+                        const iconContainer = document.createElement('div');
+                        iconContainer.className = 'user-icon';
+                        iconContainer.innerHTML = '<i class="fas fa-user"></i>';
+
+                        // Rimuovi l'icona esistente se già presente
+                        const existingIcon = userInfoEl.querySelector('.user-icon');
+                        if (existingIcon) {
+                            userInfoEl.removeChild(existingIcon);
+                        }
+
+                        // Inserisci prima dell'elemento nome utente
+                        if (userNameEl) {
+                            userInfoEl.insertBefore(iconContainer, userNameEl);
+                        } else {
+                            userInfoEl.appendChild(iconContainer);
+                        }
+                    }
+                }
+
+                // Nascondi pulsante login
+                loginBtn.classList.add('hidden');
+            } else {
+                // Nascondi pulsanti di backup/ripristino cloud
+                cloudBackupBtn.classList.add('hidden');
+                cloudRestoreBtn.classList.add('hidden');
+
+                // Nascondi informazioni utente
+                userInfoEl.classList.add('hidden');
+
+                // Mostra pulsante login
+                loginBtn.classList.remove('hidden');
+            }
+        },
+
+        // Login con Google
+        loginWithGoogle: function() {
+            if (!firebase || !firebase.auth) {
+                this.showNotification('Errore', 'Firebase non è pronto. Ricarica la pagina.', 'error');
+                return;
+            }
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    // Login riuscito
+                    currentUser = result.user;
+                    this.updateLoginStatus(true);
+                    this.showNotification('Successo', 'Accesso effettuato come ' + currentUser.displayName, 'success');
+                })
+                .catch((error) => {
+                    // Errore login
+                    console.error("Errore di autenticazione:", error);
+                    this.showNotification('Errore', 'Accesso fallito: ' + error.message, 'error');
+                });
+        },
+
+        // Logout
+        logout: function() {
+            if (!firebase || !firebase.auth) return;
+
+            firebase.auth().signOut()
+                .then(() => {
+                    currentUser = null;
+                    this.updateLoginStatus(false);
+                    this.showNotification('Successo', 'Disconnessione effettuata', 'success');
+                })
+                .catch((error) => {
+                    console.error("Errore durante il logout:", error);
+                    this.showNotification('Errore', 'Disconnessione fallita', 'error');
+                });
+        },
+
+        // Backup dei dati su Firebase
+        backupToCloud: function() {
+            if (!currentUser) {
+                this.showNotification('Attenzione', 'Devi accedere per usare il backup cloud', 'warning');
+                return;
+            }
+
+            this.showModal('Backup su cloud', `
+    <p>Sei sicuro di voler eseguire il backup dei tuoi dati su cloud?</p>
+    <p>Questo sovrascriverà ogni backup precedente associato al tuo account.</p>
+  `);
+
+            this.elements.modalConfirm.onclick = () => {
+                this.hideModal();
+                this.executeCloudBackup();
+            };
+        },
+
+        // Esegue effettivamente il backup su Firebase
+        executeCloudBackup: function() {
+            if (!firebase || !firebase.firestore || !currentUser) return;
+
+            try {
+                // Mostra il loader
+                this.showLoader('Backup in corso...');
+
+                // Clona e prepara i dati per Firestore
+                const dataToBackup = this.prepareDataForFirestore();
+
+                // Riferimento al documento nel database
+                const docRef = this.db.collection('userBackups').doc(currentUser.uid);
+
+                // Dividi il backup in chunk se necessario
+                // Firestore ha un limite di dimensione documento di 1MB
+                if (JSON.stringify(dataToBackup).length > 800000) { // ~800KB per sicurezza
+                    this.backupInChunks(dataToBackup);
+                } else {
+                    // Salva su Firebase in un solo documento
+                    docRef.set(dataToBackup)
+                        .then(() => {
+                            this.hideLoader();
+                            this.showNotification('Successo', 'Backup cloud completato', 'success');
+                        })
+                        .catch((error) => {
+                            console.error("Errore nel backup su cloud:", error);
+                            this.hideLoader();
+                            this.showNotification('Errore', 'Backup cloud fallito: ' + error.message, 'error');
+                        });
+                }
+            } catch (error) {
+                this.hideLoader();
+                console.error("Errore nel backup su cloud:", error);
+                this.showNotification('Errore', 'Backup cloud fallito', 'error');
+            }
+        },
+
+        // preparare i dati per Firestore
+        prepareDataForFirestore: function() {
+            // Creiamo una copia pulita dei dati
+            const carsBackup = [];
+
+            // Per ogni auto, creiamo una versione compatibile con Firestore
+            this.data.cars.forEach(car => {
+                const carBackup = {
+                    id: car.id || 0,
+                    name: car.name || '',
+                    brand: car.brand || '',
+                    model: car.model || '',
+                    year: car.year || 0,
+                    plate: car.plate || '',
+                    registrationDate: car.registrationDate || '',
+                    mileage: car.mileage || 0,
+                    addDate: car.addDate || new Date().toISOString(),
+                    maintenance: [],
+                    documents: []
+                };
+
+                // Salva solo i metadati per la manutenzione, senza immagini/documenti
+                if (car.maintenance && Array.isArray(car.maintenance)) {
+                    car.maintenance.forEach(m => {
+                        if (m) { // Verifica che l'elemento manutenzione esista
+                            const maintenanceBackup = {
+                                id: m.id || 0,
+                                type: m.type || '',
+                                customType: m.customType || '',
+                                date: m.date || '',
+                                mileage: m.mileage || 0,
+                                cost: m.cost || 0,
+                                notes: m.notes || ''
+                            };
+
+                            // Aggiungi il promemoria se presente
+                            if (m.reminder) {
+                                maintenanceBackup.reminder = {
+                                    type: m.reminder.type || '',
+                                    date: m.reminder.date || '',
+                                    mileage: m.reminder.mileage || 0,
+                                    intervalValue: m.reminder.intervalValue || 0,
+                                    intervalUnit: m.reminder.intervalUnit || '',
+                                    createdAt: m.reminder.createdAt || new Date().toISOString()
+                                };
+                            }
+
+                            // Aggiungi alla lista
+                            carBackup.maintenance.push(maintenanceBackup);
+                        }
+                    });
+                }
+
+                // Salva solo i metadati per i documenti, senza i dati binari
+                if (car.documents && Array.isArray(car.documents)) {
+                    car.documents.forEach(doc => {
+                        if (doc) { // Verifica che l'elemento documento esista
+                            const docBackup = {
+                                id: doc.id || 0,
+                                name: doc.name || '',
+                                type: doc.type || '',
+                                size: doc.size || 0,
+                                date: doc.date || new Date().toISOString()
+                                // Omettiamo il campo data che contiene il PDF o l'immagine
+                            };
+
+                            carBackup.documents.push(docBackup);
+                        }
+                    });
+                }
+
+                // Aggiungi l'auto alla lista
+                carsBackup.push(carBackup);
+            });
+
+            // Prepara l'oggetto finale
+            return {
+                cars: carsBackup,
+                nextId: this.data.nextId || 1,
+                timestamp: new Date().toISOString(),
+                version: '1.1',
+                metadataOnly: true // Flag per indicare che le immagini/documenti non sono inclusi
+            };
+        },
+
+        // Funzione per dividere il backup in chunk se è troppo grande
+        backupInChunks: function(dataToBackup) {
+            try {
+                // Serializza i dati
+                const serializedData = JSON.stringify(dataToBackup);
+
+                // Dividi in chunk di ~500KB
+                const chunkSize = 500000;
+                const chunksCount = Math.ceil(serializedData.length / chunkSize);
+                const chunks = [];
+
+                for (let i = 0; i < chunksCount; i++) {
+                    chunks.push(serializedData.substr(i * chunkSize, chunkSize));
+                }
+
+                // Crea un documento principale con metadati
+                const mainDoc = {
+                    timestamp: new Date().toISOString(),
+                    version: '1.1',
+                    chunksCount: chunksCount,
+                    totalSize: serializedData.length,
+                    isChunked: true
+                };
+
+                // Salva il documento principale
+                const docRef = this.db.collection('userBackups').doc(currentUser.uid);
+
+                // Prima salva il documento principale
+                docRef.set(mainDoc)
+                    .then(() => {
+                        // Ora salva tutti i chunk
+                        const promises = [];
+
+                        for (let i = 0; i < chunksCount; i++) {
+                            const chunkRef = this.db.collection('userBackups')
+                                .doc(currentUser.uid)
+                                .collection('chunks')
+                                .doc(`chunk_${i}`);
+
+                            promises.push(chunkRef.set({
+                                index: i,
+                                data: chunks[i],
+                                timestamp: new Date().toISOString()
+                            }));
+                        }
+
+                        // Aspetta che tutti i chunk siano salvati
+                        return Promise.all(promises);
+                    })
+                    .then(() => {
+                        this.hideLoader();
+                        this.showNotification('Successo', 'Backup cloud completato', 'success');
+                    })
+                    .catch(error => {
+                        console.error("Errore nel backup in chunk:", error);
+                        this.hideLoader();
+                        this.showNotification('Errore', 'Backup cloud fallito: ' + error.message, 'error');
+                    });
+            } catch (error) {
+                this.hideLoader();
+                console.error("Errore nel backup in chunk:", error);
+                this.showNotification('Errore', 'Backup in chunk fallito', 'error');
+            }
+        },
+
+        // Ripristina dati da Firebase
+        restoreFromCloud: function() {
+            if (!currentUser) {
+                this.showNotification('Attenzione', 'Devi accedere per ripristinare dal cloud', 'warning');
+                return;
+            }
+
+            this.showModal('Ripristino da cloud', `
+    <p><strong>Attenzione!</strong> Stai per ripristinare i dati dal tuo ultimo backup cloud.</p>
+    <p>Tutti i dati attuali verranno sostituiti con quelli del backup.</p>
+    <p>Questa operazione non può essere annullata.</p>
+  `);
+
+            this.elements.modalConfirm.textContent = 'Ripristina';
+            this.elements.modalConfirm.onclick = () => {
+                this.hideModal();
+                this.executeCloudRestore();
+            };
+        },
+
+        // Funzione per gestire il ripristino da backup diviso in chunk
+        restoreFromChunks: function(backupMetadata) {
+            const chunksCount = backupMetadata.chunksCount;
+            const promises = [];
+
+            // Carica tutti i chunk
+            for (let i = 0; i < chunksCount; i++) {
+                const chunkRef = this.db.collection('userBackups')
+                    .doc(currentUser.uid)
+                    .collection('chunks')
+                    .doc(`chunk_${i}`);
+
+                promises.push(chunkRef.get());
+            }
+
+            return Promise.all(promises)
+                .then(chunks => {
+                    // Ordina i chunk per indice
+                    chunks.sort((a, b) => a.data().index - b.data().index);
+
+                    // Ricostruisci i dati serializzati
+                    let serializedData = '';
+                    chunks.forEach(chunk => {
+                        serializedData += chunk.data().data;
+                    });
+
+                    // Deserializza i dati
+                    const backupData = JSON.parse(serializedData);
+
+                    // Processa i dati
+                    return this.processCarsData(backupData);
+                });
+        },
+
+        // Funzione per processare i dati delle auto ripristinate
+        processCarsData: function(backupData) {
+            // Se è un backup "metadataOnly", dovremmo gestirlo diversamente
+            if (backupData.metadataOnly) {
+                // Qui dovresti mostrare un messaggio all'utente o gestire diversamente
+                this.showNotification('Info', 'Backup ripristinato (solo metadati, le immagini e i documenti non sono stati ripristinati)', 'info');
+            }
+
+            // Imposta i dati
+            if (backupData.cars && Array.isArray(backupData.cars)) {
+                // Sostituisci cars con i dati del backup
+                this.data.cars = this.mergeBackupWithLocalData(backupData.cars);
+            }
+
+            if (backupData.nextId) {
+                this.data.nextId = backupData.nextId;
+            }
+
+            // Salva in localStorage
+            this.saveData();
+            this.hideLoader();
+            this.showNotification('Successo', 'Ripristino completato', 'success');
+
+            return backupData;
+        },
+
+        // Esegue effettivamente il ripristino da Firebase
+        executeCloudRestore: function() {
+            if (!firebase || !firebase.firestore || !currentUser) return;
+
+            try {
+                // Mostra il loader
+                this.showLoader('Ripristino in corso...');
+
+                // Riferimento al documento nel database
+                const docRef = this.db.collection('userBackups').doc(currentUser.uid);
+
+                // Recupera i dati da Firebase
+                docRef.get()
+                    .then((docSnap) => {
+                        if (docSnap.exists) {
+                            const backupData = docSnap.data();
+
+                            // Controlla se il backup è diviso in chunk
+                            if (backupData.isChunked) {
+                                return this.restoreFromChunks(backupData);
+                            } else {
+                                // Backup normale
+                                return this.processCarsData(backupData);
+                            }
+                        } else {
+                            // Nessun backup trovato
+                            this.hideLoader();
+                            this.showNotification('Attenzione', 'Nessun backup trovato per questo account', 'warning');
+                            return null;
+                        }
+                    })
+                    .then((processedData) => {
+                        if (processedData) {
+                            // Aggiorna l'interfaccia
+                            this.renderCars();
+                            this.checkReminders();
+                            this.updateRemindersBadge();
+                        }
+                    })
+                    .catch((error) => {
+                        this.hideLoader();
+                        console.error("Errore nel ripristino da cloud:", error);
+                        this.showNotification('Errore', 'Ripristino fallito: ' + error.message, 'error');
+                    });
+            } catch (error) {
+                this.hideLoader();
+                console.error("Errore nel ripristino da cloud:", error);
+                this.showNotification('Errore', 'Ripristino fallito', 'error');
+            }
+        },
+
+        // Gestisci eventuali migrazioni di versioni precedenti
+        migrateBackupData: function(backupData) {
+            // Implementa la logica di migrazione per versioni precedenti
+            // Per ora facciamo un ripristino semplice
+            this.data.cars = backupData.cars || [];
+            this.data.nextId = backupData.nextId || 1;
+
+            // Salva in localStorage
+            this.saveData();
+
+            // Aggiorna l'interfaccia
+            this.showNotification('Successo', 'Ripristino completato (versione precedente)', 'success');
+            this.renderCars();
+            this.checkReminders();
+            this.updateRemindersBadge();
+        },
+
+        // Funzione per unire i dati di backup con quelli locali (per conservare immagini)
+        mergeBackupWithLocalData: function(backupCars) {
+            // Se vogliamo conservare le immagini locali quando sono disponibili
+            const mergedCars = [];
+
+            // Per ogni auto nel backup
+            backupCars.forEach(backupCar => {
+                // Cerca se esiste già localmente
+                const localCar = this.getCarById(backupCar.id);
+
+                if (localCar) {
+                    // Crea una nuova auto con i dati del backup
+                    const mergedCar = {...backupCar};
+
+                    // Mantieni l'immagine locale se esiste
+                    if (localCar.image && !backupCar.image) {
+                        mergedCar.image = localCar.image;
+                    }
+
+                    // Mantieni i documenti locali
+                    if (localCar.documents && Array.isArray(localCar.documents)) {
+                        mergedCar.documents = localCar.documents;
+                    }
+
+                    // Unisci gli interventi di manutenzione (aggiorna quelli esistenti, aggiungi i nuovi)
+                    if (backupCar.maintenance && Array.isArray(backupCar.maintenance)) {
+                        mergedCar.maintenance = [];
+
+                        // Per ogni intervento nel backup
+                        backupCar.maintenance.forEach(backupMaint => {
+                            // Cerca se esiste localmente
+                            const localMaint = localCar.maintenance?.find(m => m.id === backupMaint.id);
+
+                            if (localMaint) {
+                                // Mantieni i file locali se esistono
+                                const mergedMaint = {...backupMaint};
+                                if (localMaint.files && !backupMaint.files) {
+                                    mergedMaint.files = localMaint.files;
+                                }
+                                mergedCar.maintenance.push(mergedMaint);
+                            } else {
+                                // Intervento nuovo, aggiungilo semplicemente
+                                mergedCar.maintenance.push(backupMaint);
+                            }
+                        });
+                    }
+
+                    mergedCars.push(mergedCar);
+                } else {
+                    // Auto nuova, aggiungila semplicemente
+                    mergedCars.push(backupCar);
+                }
+            });
+
+            return mergedCars;
+        },
+
+        // Mostra un loader durante le operazioni lunghe
+        showLoader: function(message) {
+            // Crea il loader se non esiste
+            if (!document.getElementById('loader-container')) {
+                const loaderContainer = document.createElement('div');
+                loaderContainer.id = 'loader-container';
+                loaderContainer.innerHTML = `
+      <div class="loader-overlay"></div>
+      <div class="loader-content">
+        <div class="loader-spinner"></div>
+        <div class="loader-message">Caricamento...</div>
+      </div>
+    `;
+                document.body.appendChild(loaderContainer);
+            }
+
+            // Imposta il messaggio e mostra il loader
+            document.querySelector('.loader-message').textContent = message || 'Caricamento...';
+            document.getElementById('loader-container').classList.add('visible');
+        },
+
+        hideLoader: function() {
+            const loader = document.getElementById('loader-container');
+            if (loader) {
+                loader.classList.remove('visible');
+            }
         },
 
         // Funzione per popolare il filtro anni
@@ -396,6 +1011,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('year-filter-options')?.classList.add('hidden');
                 }
             });
+
+            // Login con Google
+            const loginBtn = document.getElementById('login-btn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    this.loginWithGoogle();
+                });
+            }
+
+            // Logout
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    this.logout();
+                });
+            }
+
+            // Backup su cloud
+            const cloudBackupBtn = document.getElementById('cloud-backup-btn');
+            if (cloudBackupBtn) {
+                cloudBackupBtn.addEventListener('click', () => {
+                    this.backupToCloud();
+                });
+            }
+
+            // Ripristino da cloud
+            const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
+            if (cloudRestoreBtn) {
+                cloudRestoreBtn.addEventListener('click', () => {
+                    this.restoreFromCloud();
+                });
+            }
         },
 
         toggleSettingsMenu: function() {

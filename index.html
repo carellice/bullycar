@@ -10,6 +10,27 @@
     <link rel="manifest" href="manifest.json?v=4">
     <meta name="theme-color" content="#007aff">
     <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+
+    <!-- Firebase Config -->
+    <script type="text/javascript">
+        // Configurazione Firebase globale (sostituisci con i tuoi valori)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3B23stp1lRHrhpBH2u2vNrGGTE0fRaTg",
+            authDomain: "bullycar-3b49d.firebaseapp.com",
+            projectId: "bullycar-3b49d",
+            storageBucket: "bullycar-3b49d.firebasestorage.app",
+            messagingSenderId: "875126826672",
+            appId: "1:875126826672:web:6663b7acd578886bf6bd75"
+        };
+    </script>
+    <!-- Firebase App (la core library) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <script src="script.js"></script>
 </head>
 <body>
     <div id="app-container" class="light-mode">
@@ -20,6 +41,22 @@
                 <h1>BullyCar 1.1</h1>
             </div>
             <div class="header-controls">
+                <div id="user-info" class="user-info hidden">
+                    <img class="user-avatar" src="" alt="Avatar">
+                    <span class="user-name"></span>
+                    <button id="logout-btn" class="icon-button" title="Disconnetti">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+                <button id="login-btn" class="icon-button" title="Accedi con Google">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button id="cloud-backup-btn" class="icon-button hidden" title="Backup su cloud">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </button>
+                <button id="cloud-restore-btn" class="icon-button hidden" title="Ripristina da cloud">
+                    <i class="fas fa-cloud-download-alt"></i>
+                </button>
                 <button id="export-button" class="icon-button" title="Esporta dati">
                     <i class="fas fa-file-export"></i>
                 </button>
@@ -351,7 +388,5 @@
             <!-- Notifiche qui -->
         </div>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
