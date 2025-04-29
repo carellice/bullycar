@@ -287,137 +287,190 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             this.showModal('Backup su cloud', `
-    <p>Sei sicuro di voler eseguire il backup dei tuoi dati su cloud?</p>
-    <p>Questo sovrascriverà ogni backup precedente associato al tuo account.</p>
-  `);
+                <p>Scegli cosa includere nel backup:</p>
+                <div class="backup-options">
+                    <label class="backup-option">
+                        <input type="radio" name="backup-type" value="complete" checked>
+                        <span>Backup completo (con immagini e documenti)</span>
+                    </label>
+                    <label class="backup-option">
+                        <input type="radio" name="backup-type" value="metadata">
+                        <span>Solo dati (senza immagini e documenti)</span>
+                    </label>
+                </div>
+                <p class="backup-warning">Il backup completo potrebbe richiedere più tempo.</p>
+            `);
 
             this.elements.modalConfirm.onclick = () => {
+                const backupType = document.querySelector('input[name="backup-type"]:checked').value;
                 this.hideModal();
-                this.executeCloudBackup();
+                this.executeCloudBackup(backupType === 'complete');
             };
         },
 
         // Esegue effettivamente il backup su Firebase
-        executeCloudBackup: function() {
+        executeCloudBackup: async function() {
             if (!firebase || !firebase.firestore || !currentUser) return;
 
             try {
                 // Mostra il loader
                 this.showLoader('Backup in corso...');
 
-                // Clona e prepara i dati per Firestore
-                const dataToBackup = this.prepareDataForFirestore();
+                // Prepara i dati con file compressi
+                const dataToBackup = await this.prepareDataForFirestore();
+
+                // Converti in stringa per valutarne la dimensione
+                const serializedData = JSON.stringify(dataToBackup);
+                const dataSizeInMB = (serializedData.length * 2) / (1024 * 1024);
+
+                console.log(`Dimensione backup: ${dataSizeInMB.toFixed(2)} MB`);
 
                 // Riferimento al documento nel database
                 const docRef = this.db.collection('userBackups').doc(currentUser.uid);
 
-                // Dividi il backup in chunk se necessario
-                // Firestore ha un limite di dimensione documento di 1MB
-                if (JSON.stringify(dataToBackup).length > 800000) { // ~800KB per sicurezza
-                    this.backupInChunks(dataToBackup);
+                // Dividi il backup in chunk se supera 800KB
+                if (serializedData.length > 800000) {
+                    await this.backupInChunks(dataToBackup);
                 } else {
                     // Salva su Firebase in un solo documento
-                    docRef.set(dataToBackup)
-                        .then(() => {
-                            this.hideLoader();
-                            this.showNotification('Successo', 'Backup cloud completato', 'success');
-                        })
-                        .catch((error) => {
-                            console.error("Errore nel backup su cloud:", error);
-                            this.hideLoader();
-                            this.showNotification('Errore', 'Backup cloud fallito: ' + error.message, 'error');
-                        });
+                    await docRef.set(dataToBackup);
+                    this.hideLoader();
+                    this.showNotification('Successo', 'Backup cloud completato', 'success');
                 }
             } catch (error) {
                 this.hideLoader();
                 console.error("Errore nel backup su cloud:", error);
-                this.showNotification('Errore', 'Backup cloud fallito', 'error');
+                this.showNotification('Errore', 'Backup cloud fallito: ' + error.message, 'error');
             }
         },
 
         // preparare i dati per Firestore
-        prepareDataForFirestore: function() {
-            // Creiamo una copia pulita dei dati
-            const carsBackup = [];
+        prepareDataForFirestore: async function() {
+            try {
+                // Mostra il loader perché questa operazione potrebbe richiedere tempo
+                this.showLoader('Preparazione backup in corso...');
 
-            // Per ogni auto, creiamo una versione compatibile con Firestore
-            this.data.cars.forEach(car => {
-                const carBackup = {
-                    id: car.id || 0,
-                    name: car.name || '',
-                    brand: car.brand || '',
-                    model: car.model || '',
-                    year: car.year || 0,
-                    plate: car.plate || '',
-                    registrationDate: car.registrationDate || '',
-                    mileage: car.mileage || 0,
-                    addDate: car.addDate || new Date().toISOString(),
-                    maintenance: [],
-                    documents: []
-                };
+                // Creiamo una copia pulita dei dati
+                const carsBackup = [];
 
-                // Salva solo i metadati per la manutenzione, senza immagini/documenti
-                if (car.maintenance && Array.isArray(car.maintenance)) {
-                    car.maintenance.forEach(m => {
-                        if (m) { // Verifica che l'elemento manutenzione esista
-                            const maintenanceBackup = {
-                                id: m.id || 0,
-                                type: m.type || '',
-                                customType: m.customType || '',
-                                date: m.date || '',
-                                mileage: m.mileage || 0,
-                                cost: m.cost || 0,
-                                notes: m.notes || ''
-                            };
+                // Per ogni auto, creiamo una versione con dati compressi
+                for (const car of this.data.cars) {
+                    const carBackup = {
+                        id: car.id || 0,
+                        name: car.name || '',
+                        brand: car.brand || '',
+                        model: car.model || '',
+                        year: car.year || 0,
+                        plate: car.plate || '',
+                        registrationDate: car.registrationDate || '',
+                        mileage: car.mileage || 0,
+                        addDate: car.addDate || new Date().toISOString(),
+                        maintenance: [],
+                        documents: []
+                    };
 
-                            // Aggiungi il promemoria se presente
-                            if (m.reminder) {
-                                maintenanceBackup.reminder = {
-                                    type: m.reminder.type || '',
-                                    date: m.reminder.date || '',
-                                    mileage: m.reminder.mileage || 0,
-                                    intervalValue: m.reminder.intervalValue || 0,
-                                    intervalUnit: m.reminder.intervalUnit || '',
-                                    createdAt: m.reminder.createdAt || new Date().toISOString()
+                    // Aggiungi l'immagine dell'auto se presente (compressa)
+                    if (car.image) {
+                        carBackup.image = await this.compressImage(car.image, 600, 0.6);
+                    }
+
+                    // Salva la manutenzione con le immagini/documenti compressi
+                    if (car.maintenance && Array.isArray(car.maintenance)) {
+                        for (const m of car.maintenance) {
+                            if (m) {
+                                const maintenanceBackup = {
+                                    id: m.id || 0,
+                                    type: m.type || '',
+                                    customType: m.customType || '',
+                                    date: m.date || '',
+                                    mileage: m.mileage || 0,
+                                    cost: m.cost || 0,
+                                    notes: m.notes || '',
+                                    files: []
                                 };
+
+                                // Comprimi e aggiungi i file se presenti
+                                if (m.files && Array.isArray(m.files)) {
+                                    for (const file of m.files) {
+                                        if (file) {
+                                            let compressedData;
+                                            if (file.type.startsWith('image/')) {
+                                                compressedData = await this.compressImage(file.data, 800, 0.7);
+                                            } else {
+                                                compressedData = await this.compressDocument(file.data);
+                                            }
+
+                                            maintenanceBackup.files.push({
+                                                id: file.id,
+                                                name: file.name,
+                                                type: file.type,
+                                                size: file.size,
+                                                date: file.date,
+                                                data: compressedData
+                                            });
+                                        }
+                                    }
+                                }
+
+                                // Aggiungi il promemoria se presente
+                                if (m.reminder) {
+                                    maintenanceBackup.reminder = {
+                                        type: m.reminder.type || '',
+                                        date: m.reminder.date || '',
+                                        mileage: m.reminder.mileage || 0,
+                                        intervalValue: m.reminder.intervalValue || 0,
+                                        intervalUnit: m.reminder.intervalUnit || '',
+                                        createdAt: m.reminder.createdAt || new Date().toISOString()
+                                    };
+                                }
+
+                                // Aggiungi alla lista
+                                carBackup.maintenance.push(maintenanceBackup);
                             }
-
-                            // Aggiungi alla lista
-                            carBackup.maintenance.push(maintenanceBackup);
                         }
-                    });
+                    }
+
+                    // Salva i documenti compressi
+                    if (car.documents && Array.isArray(car.documents)) {
+                        for (const doc of car.documents) {
+                            if (doc) {
+                                const compressedData = await this.compressDocument(doc.data);
+
+                                const docBackup = {
+                                    id: doc.id || 0,
+                                    name: doc.name || '',
+                                    type: doc.type || '',
+                                    size: doc.size || 0,
+                                    date: doc.date || new Date().toISOString(),
+                                    data: compressedData
+                                };
+
+                                carBackup.documents.push(docBackup);
+                            }
+                        }
+                    }
+
+                    // Aggiungi l'auto alla lista
+                    carsBackup.push(carBackup);
                 }
 
-                // Salva solo i metadati per i documenti, senza i dati binari
-                if (car.documents && Array.isArray(car.documents)) {
-                    car.documents.forEach(doc => {
-                        if (doc) { // Verifica che l'elemento documento esista
-                            const docBackup = {
-                                id: doc.id || 0,
-                                name: doc.name || '',
-                                type: doc.type || '',
-                                size: doc.size || 0,
-                                date: doc.date || new Date().toISOString()
-                                // Omettiamo il campo data che contiene il PDF o l'immagine
-                            };
+                // Nascondi loader
+                this.hideLoader();
 
-                            carBackup.documents.push(docBackup);
-                        }
-                    });
-                }
-
-                // Aggiungi l'auto alla lista
-                carsBackup.push(carBackup);
-            });
-
-            // Prepara l'oggetto finale
-            return {
-                cars: carsBackup,
-                nextId: this.data.nextId || 1,
-                timestamp: new Date().toISOString(),
-                version: '1.1',
-                metadataOnly: true // Flag per indicare che le immagini/documenti non sono inclusi
-            };
+                // Prepara l'oggetto finale
+                return {
+                    cars: carsBackup,
+                    nextId: this.data.nextId || 1,
+                    timestamp: new Date().toISOString(),
+                    version: '1.1',
+                    includesFiles: true // Flag per indicare che le immagini/documenti sono inclusi
+                };
+            } catch (error) {
+                this.hideLoader();
+                console.error("Errore nella preparazione dei dati:", error);
+                this.showNotification('Errore', 'Preparazione backup fallita', 'error');
+                throw error;
+            }
         },
 
         // Funzione per dividere il backup in chunk se è troppo grande
@@ -541,16 +594,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Funzione per processare i dati delle auto ripristinate
         processCarsData: function(backupData) {
-            // Se è un backup "metadataOnly", dovremmo gestirlo diversamente
+            // Verifica flag per file inclusi o solo metadati
             if (backupData.metadataOnly) {
-                // Qui dovresti mostrare un messaggio all'utente o gestire diversamente
                 this.showNotification('Info', 'Backup ripristinato (solo metadati, le immagini e i documenti non sono stati ripristinati)', 'info');
-            }
 
-            // Imposta i dati
-            if (backupData.cars && Array.isArray(backupData.cars)) {
-                // Sostituisci cars con i dati del backup
-                this.data.cars = this.mergeBackupWithLocalData(backupData.cars);
+                // Unisci con i dati locali per mantenere i file
+                if (backupData.cars && Array.isArray(backupData.cars)) {
+                    this.data.cars = this.mergeBackupWithLocalData(backupData.cars);
+                }
+            } else if (backupData.includesFiles) {
+                // Se il backup include file, sovrascriviamo completamente
+                this.showNotification('Info', 'Backup ripristinato con tutti i file e documenti', 'success');
+
+                if (backupData.cars && Array.isArray(backupData.cars)) {
+                    this.data.cars = backupData.cars;
+                }
+            } else {
+                // Caso di backup senza flag chiare, usiamo merge prudente
+                this.showNotification('Info', 'Backup ripristinato, possibile perdita di alcuni dati', 'info');
+
+                if (backupData.cars && Array.isArray(backupData.cars)) {
+                    this.data.cars = this.mergeBackupWithLocalData(backupData.cars);
+                }
             }
 
             if (backupData.nextId) {
@@ -560,7 +625,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Salva in localStorage
             this.saveData();
             this.hideLoader();
-            this.showNotification('Successo', 'Ripristino completato', 'success');
 
             return backupData;
         },
@@ -1252,6 +1316,68 @@ document.addEventListener('DOMContentLoaded', function() {
             this.showNotification('Completato', 'Tutti i dati sono stati cancellati', 'info');
             this.renderCars();
             this.updateRemindersBadge();
+        },
+
+        compressImage: function(imageDataUrl, maxWidth = 800, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Calcola le nuove dimensioni mantenendo le proporzioni
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height = (height * maxWidth) / width;
+                            width = maxWidth;
+                        }
+
+                        // Crea un canvas per il ridimensionamento
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+
+                        // Disegna l'immagine ridimensionata sul canvas
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Converti il canvas in base64 con la qualità specificata
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                        resolve(compressedDataUrl);
+                    };
+
+                    img.onerror = (error) => {
+                        reject(error);
+                    };
+
+                    img.src = imageDataUrl;
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        },
+
+        compressDocument: function(docDataUrl, compressionRatio = 0.8) {
+            // Per i documenti PDF o di altro tipo, facciamo una semplice validazione
+            // e potremmo decidere di limitarne la dimensione
+            return new Promise((resolve, reject) => {
+                try {
+                    // Controlla dimensione approssimativa in KB
+                    const sizeInKB = Math.round(docDataUrl.length * 0.75 / 1024);
+
+                    if (sizeInKB > 500) {
+                        // Se il documento è molto grande, mostriamo un avviso
+                        this.showNotification('Attenzione', 'Il documento è grande (' + sizeInKB + 'KB) e potrebbe rallentare il backup', 'warning');
+                    }
+
+                    // In questa versione semplice, restituiamo il documento così com'è
+                    // In un'implementazione più avanzata, potresti usare librerie
+                    // specifiche per comprimere PDF
+                    resolve(docDataUrl);
+                } catch (error) {
+                    reject(error);
+                }
+            });
         },
         
         // Carica dati dal localStorage
