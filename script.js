@@ -2268,18 +2268,118 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         openFile: function(file) {
-            // Crea un link per il download
-            const a = document.createElement('a');
-            a.href = file.data;
-            a.download = file.name; // Usa il nome originale del file
+            // Usa il nuovo metodo safeOpenFile invece di window.open diretto
+            this.safeOpenFile(file.data, file.name, file.type);
+        },
 
-            // Aggiungi l'elemento al DOM, esegui il click e rimuovilo
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        // Aggiungi questa funzione helper al tuo script.js
+        // Versione semplificata di safeOpenFile senza header né pulsanti
+        safeOpenFile: function(fileData, fileName, fileType) {
+            try {
+                // Per sicurezza, mostriamo un messaggio e procediamo al download classico
+                // se il data URL è troppo lungo (potrebbe crashare il browser)
+                if (fileData.length > 2000000) { // ~2MB come limite di sicurezza
+                    console.warn("File troppo grande per l'apertura diretta, si procede al download");
 
-            // Mostra una notifica di conferma
-            this.showNotification('Download', `Download di "${file.name}" avviato`, 'success');
+                    // Usando il metodo download classico
+                    const a = document.createElement('a');
+                    a.href = fileData;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    this.showNotification('Download', `Download di "${fileName}" avviato (file grande)`, 'info');
+                    return;
+                }
+
+                // Per file più piccoli, proviamo ad aprirli in una nuova scheda
+                const newTab = window.open('about:blank', '_blank');
+
+                // Se il popup è stato bloccato
+                if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                    console.warn("Apertura della nuova scheda bloccata, si procede al download");
+
+                    // Usiamo il metodo download come fallback
+                    const a = document.createElement('a');
+                    a.href = fileData;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    this.showNotification('Download', `Download di "${fileName}" avviato`, 'info');
+                    return;
+                }
+
+                // Impostare il titolo della pagina come nome del file (appare nella tab)
+                newTab.document.title = fileName;
+
+                // Scriviamo l'appropriato contenuto HTML nella nuova scheda
+                newTab.document.write('<!DOCTYPE html><html><head>');
+
+                // Aggiungiamo stili CSS minimali per diversi tipi di file
+                newTab.document.write(`
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    background-color: #f0f0f0;
+                    overflow: hidden;
+                }
+                img {
+                    max-width: 100%;
+                    max-height: 100vh;
+                    object-fit: contain;
+                }
+                iframe {
+                    width: 100%;
+                    height: 100vh;
+                    border: none;
+                }
+            </style>
+        `);
+
+                newTab.document.write('</head><body>');
+
+                // Contenuto diverso in base al tipo di file - senza intestazioni o pulsanti
+                if (fileType.startsWith('image/')) {
+                    // Per le immagini, solo l'immagine a schermo intero
+                    newTab.document.write(`<img src="${fileData}" alt="">`);
+                } else if (fileType === 'application/pdf') {
+                    // Per i PDF, iframe a schermo intero
+                    newTab.document.write(`<iframe src="${fileData}" type="application/pdf"></iframe>`);
+                } else {
+                    // Per altri tipi di file, reindirizzamento diretto all'URL del file
+                    newTab.location.href = fileData;
+                    return; // Usciamo qui perché abbiamo fatto un redirect
+                }
+
+                newTab.document.write('</body></html>');
+                newTab.document.close();
+
+                this.showNotification('Visualizzazione', `"${fileName}" aperto in una nuova scheda`, 'success');
+            } catch (error) {
+                console.error('Errore nell\'apertura del file:', error);
+
+                // In caso di errore, fallback al download tradizionale
+                try {
+                    const a = document.createElement('a');
+                    a.href = fileData;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+
+                    this.showNotification('Download', `Download di "${fileName}" avviato (fallback)`, 'warning');
+                } catch (e) {
+                    this.showNotification('Errore', `Impossibile aprire o scaricare il file`, 'error');
+                }
+            }
         },
         
         renderDocumentsList: function(car) {
@@ -2542,18 +2642,8 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         openDocument: function(doc) {
-            // Crea un link per il download
-            const a = document.createElement('a');
-            a.href = doc.data;
-            a.download = doc.name; // Usa il nome originale del file
-
-            // Aggiungi l'elemento al DOM, esegui il click e rimuovilo
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            // Mostra una notifica di conferma
-            this.showNotification('Download', `Download di "${doc.name}" avviato`, 'success');
+            // Usa il nuovo metodo safeOpenFile invece di window.open diretto
+            this.safeOpenFile(doc.data, doc.name, doc.type);
         },
         
         // Gestione promemoria
