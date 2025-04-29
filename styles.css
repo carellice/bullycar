@@ -1858,3 +1858,56 @@ input, textarea, select, [contenteditable="true"] {
     width: 28px;
     height: 28px;
 }
+
+/* Nascondi alcuni controlli su mobile */
+@media (max-width: 768px) {
+    #export-button,
+    #import-button,
+    #cloud-backup-btn,
+    #cloud-restore-btn,
+    .theme-dropdown {
+        display: none !important;
+    }
+
+    #settings-button {
+        display: flex !important;
+    }
+
+    /* Assicurati che il menu delle impostazioni sia ben visibile */
+    .settings-menu {
+        width: 220px;
+        right: 0;
+        left: auto;
+    }
+}
+
+/* Stile per le opzioni tema nel modal */
+.theme-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.theme-modal-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+}
+
+.theme-modal-option.selected {
+    border-color: var(--accent-color);
+    background-color: rgba(0, 122, 255, 0.1);
+}
+
+.theme-modal-option i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}

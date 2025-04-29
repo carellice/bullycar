@@ -1065,11 +1065,46 @@ document.addEventListener('DOMContentLoaded', function() {
             const menu = document.createElement('div');
             menu.className = 'settings-menu';
 
-            menu.innerHTML = `
+            // Determina se siamo su mobile
+            const isMobile = window.innerWidth <= 768;
+
+            let menuHTML = '';
+
+            // Aggiungi opzioni solo per mobile
+            if (isMobile) {
+                menuHTML += `
+            <button class="settings-option" id="settings-theme">
+                <i class="fas fa-moon"></i> Cambia tema
+            </button>
+            <button class="settings-option" id="settings-export">
+                <i class="fas fa-file-export"></i> Esporta dati
+            </button>
+            <button class="settings-option" id="settings-import">
+                <i class="fas fa-file-import"></i> Importa dati
+            </button>
+        `;
+
+                // Aggiungi opzioni cloud solo se l'utente è loggato
+                if (currentUser) {
+                    menuHTML += `
+                <button class="settings-option" id="settings-cloud-backup">
+                    <i class="fas fa-cloud-upload-alt"></i> Backup su cloud
+                </button>
+                <button class="settings-option" id="settings-cloud-restore">
+                    <i class="fas fa-cloud-download-alt"></i> Ripristina da cloud
+                </button>
+            `;
+                }
+            }
+
+            // Opzione sempre presente
+            menuHTML += `
                 <button class="settings-option danger" id="reset-data">
                     <i class="fas fa-trash-alt"></i> Cancella tutti i dati
                 </button>
             `;
+
+            menu.innerHTML = menuHTML;
 
             // Previeni la propagazione del click
             menu.addEventListener('click', (e) => {
@@ -1083,6 +1118,90 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('reset-data').addEventListener('click', () => {
                 this.showResetConfirmation();
             });
+
+            // Aggiungi event listener solo se siamo su mobile e gli elementi esistono
+            if (isMobile) {
+                // Tema
+                const themeBtn = document.getElementById('settings-theme');
+                if (themeBtn) {
+                    themeBtn.addEventListener('click', () => {
+                        this.showThemeOptions();
+                        menu.remove();
+                    });
+                }
+
+                // Export
+                const exportBtn = document.getElementById('settings-export');
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', () => {
+                        this.exportData();
+                        menu.remove();
+                    });
+                }
+
+                // Import
+                const importBtn = document.getElementById('settings-import');
+                if (importBtn) {
+                    importBtn.addEventListener('click', () => {
+                        this.showImportDialog();
+                        menu.remove();
+                    });
+                }
+
+                // Cloud backup
+                const backupBtn = document.getElementById('settings-cloud-backup');
+                if (backupBtn) {
+                    backupBtn.addEventListener('click', () => {
+                        this.backupToCloud();
+                        menu.remove();
+                    });
+                }
+
+                // Cloud restore
+                const restoreBtn = document.getElementById('settings-cloud-restore');
+                if (restoreBtn) {
+                    restoreBtn.addEventListener('click', () => {
+                        this.restoreFromCloud();
+                        menu.remove();
+                    });
+                }
+            }
+        },
+
+        showThemeOptions: function() {
+            this.showModal('Scegli tema', `
+                <div class="theme-options-container">
+                    <button class="theme-modal-option" data-theme="light">
+                        <i class="fas fa-sun"></i> Tema chiaro
+                    </button>
+                    <button class="theme-modal-option" data-theme="dark">
+                        <i class="fas fa-moon"></i> Tema scuro
+                    </button>
+                    <button class="theme-modal-option" data-theme="system">
+                        <i class="fas fa-laptop"></i> Tema di sistema
+                    </button>
+                </div>
+            `);
+
+            // Evidenzia il tema attualmente selezionato
+            const currentTheme = localStorage.getItem('bullyCarTheme') || 'system';
+            document.querySelectorAll('.theme-modal-option').forEach(option => {
+                if (option.dataset.theme === currentTheme) {
+                    option.classList.add('selected');
+                }
+
+                // Aggiungi l'event listener per la selezione del tema
+                option.addEventListener('click', () => {
+                    const theme = option.dataset.theme;
+                    this.applyTheme(theme);
+                    localStorage.setItem('bullyCarTheme', theme);
+                    this.hideModal();
+                });
+            });
+
+            // Cambia il testo del pulsante di conferma
+            this.elements.modalConfirm.style.display = 'none';
+            this.elements.modalCancel.textContent = 'Chiudi';
         },
 
         filterMaintenance: function(filterType) {
