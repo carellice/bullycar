@@ -147,75 +147,122 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Aggiorna l'interfaccia utente in base allo stato di login
         updateLoginStatus: function(isLoggedIn) {
-                const cloudBackupBtn = document.getElementById('cloud-backup-btn');
-                const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
-                const loginBtn = document.getElementById('login-btn');
-                const userInfoEl = document.getElementById('user-info');
+            const cloudBackupBtn = document.getElementById('cloud-backup-btn');
+            const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
+            const loginBtn = document.getElementById('login-btn');
+            const userInfoEl = document.getElementById('user-info');
 
-                // Se gli elementi non esistono, esci dalla funzione
-                if (!cloudBackupBtn || !cloudRestoreBtn || !loginBtn || !userInfoEl) {
-                    console.warn("Elementi UI per Firebase non trovati");
-                    return;
-                }
+            // Se gli elementi non esistono, esci dalla funzione
+            if (!cloudBackupBtn || !cloudRestoreBtn || !loginBtn || !userInfoEl) {
+                console.warn("Elementi UI per Firebase non trovati");
+                return;
+            }
 
-                if (isLoggedIn && currentUser) {
-                    // Mostra pulsanti di backup/ripristino cloud ma con lucchetto
-                    cloudBackupBtn.classList.remove('hidden');
-                    cloudRestoreBtn.classList.remove('hidden');
+            if (isLoggedIn && currentUser) {
+                // Mostra pulsanti di backup/ripristino cloud ma con lucchetto
+                cloudBackupBtn.classList.remove('hidden');
+                cloudRestoreBtn.classList.remove('hidden');
 
-                    // Controlla se l'utente ha già inserito la password corretta in questa sessione
-                    if (!sessionStorage.getItem('cloudAccessAuthorized')) {
-                        // Aggiungi la classe bloccato e l'icona del lucchetto
-                        cloudBackupBtn.classList.add('locked');
-                        cloudRestoreBtn.classList.add('locked');
+                // Controlla se l'utente ha già inserito la password corretta in questa sessione
+                if (!sessionStorage.getItem('cloudAccessAuthorized')) {
+                    // Aggiungi la classe bloccato e l'icona del lucchetto
+                    cloudBackupBtn.classList.add('locked');
+                    cloudRestoreBtn.classList.add('locked');
 
-                        // Cambia le icone per indicare che sono bloccati
-                        cloudBackupBtn.innerHTML = '<i class="fas fa-lock"></i>';
-                        cloudRestoreBtn.innerHTML = '<i class="fas fa-lock"></i>';
+                    // Cambia le icone per indicare che sono bloccati
+                    cloudBackupBtn.innerHTML = '<i class="fas fa-lock"></i>';
+                    cloudRestoreBtn.innerHTML = '<i class="fas fa-lock"></i>';
 
-                        // Aggiungi titoli informativi
-                        cloudBackupBtn.title = "Backup su cloud (bloccato)";
-                        cloudRestoreBtn.title = "Ripristino da cloud (bloccato)";
-                    } else {
-                        // L'utente è già autorizzato
-                        cloudBackupBtn.classList.remove('locked');
-                        cloudRestoreBtn.classList.remove('locked');
-
-                        // Ripristina le icone originali
-                        cloudBackupBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
-                        cloudRestoreBtn.innerHTML = '<i class="fas fa-cloud-download-alt"></i>';
-
-                        // Ripristina i titoli originali
-                        cloudBackupBtn.title = "Backup su cloud";
-                        cloudRestoreBtn.title = "Ripristino da cloud";
-                    }
-
-                    // Aggiorna informazioni utente
-                    userInfoEl.classList.remove('hidden');
-                    const userNameEl = userInfoEl.querySelector('.user-name');
-                    const userAvatarEl = userInfoEl.querySelector('.user-avatar');
-
-                    if (userNameEl) userNameEl.textContent = currentUser.displayName || 'Utente';
-
-                    // Gestisci l'avatar in modo più robusto
-                    if (userAvatarEl) {
-                        // Codice esistente per gestire l'avatar...
-                    }
-
-                    // Nascondi pulsante login
-                    loginBtn.classList.add('hidden');
+                    // Aggiungi titoli informativi
+                    cloudBackupBtn.title = "Backup su cloud (bloccato)";
+                    cloudRestoreBtn.title = "Ripristino da cloud (bloccato)";
                 } else {
-                    // Nascondi pulsanti di backup/ripristino cloud
-                    cloudBackupBtn.classList.add('hidden');
-                    cloudRestoreBtn.classList.add('hidden');
+                    // L'utente è già autorizzato
+                    cloudBackupBtn.classList.remove('locked');
+                    cloudRestoreBtn.classList.remove('locked');
 
-                    // Nascondi informazioni utente
-                    userInfoEl.classList.add('hidden');
+                    // Ripristina le icone originali
+                    cloudBackupBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
+                    cloudRestoreBtn.innerHTML = '<i class="fas fa-cloud-download-alt"></i>';
 
-                    // Mostra pulsante login
-                    loginBtn.classList.remove('hidden');
+                    // Ripristina i titoli originali
+                    cloudBackupBtn.title = "Backup su cloud";
+                    cloudRestoreBtn.title = "Ripristino da cloud";
                 }
-            },
+
+                // Aggiorna informazioni utente
+                userInfoEl.classList.remove('hidden');
+                const userNameEl = userInfoEl.querySelector('.user-name');
+                const userAvatarEl = userInfoEl.querySelector('.user-avatar');
+
+                if (userNameEl) userNameEl.textContent = currentUser.displayName || 'Utente';
+
+                // Sostituisci questa parte con la nuova gestione dell'avatar
+                if (userAvatarEl) {
+                    // MODALITÀ TEST: Imposta su true per forzare l'uso dell'icona predefinita
+                    const forceDefaultIcon = false; // Imposta su false quando hai finito i test
+
+                    // Controlla se l'utente ha un photoURL e non siamo in modalità test
+                    if (currentUser.photoURL && !forceDefaultIcon) {
+                        // Se l'utente ha un avatar, mostra l'immagine
+                        userAvatarEl.src = currentUser.photoURL;
+                        userAvatarEl.style.display = 'block';
+
+                        // Aggiungi un listener per gestire gli errori di caricamento dell'immagine
+                        userAvatarEl.onerror = function() {
+                            // Se l'immagine non si carica, mostra l'icona predefinita
+                            this.showDefaultUserIcon(userInfoEl);
+                        }.bind(this);
+                    } else {
+                        // Se l'utente non ha un avatar o siamo in modalità test, mostra l'icona predefinita
+                        this.showDefaultUserIcon(userInfoEl);
+                    }
+                }
+
+                // Nascondi pulsante login
+                loginBtn.classList.add('hidden');
+            } else {
+                // Nascondi pulsanti di backup/ripristino cloud
+                cloudBackupBtn.classList.add('hidden');
+                cloudRestoreBtn.classList.add('hidden');
+
+                // Nascondi informazioni utente
+                userInfoEl.classList.add('hidden');
+
+                // Mostra pulsante login
+                loginBtn.classList.remove('hidden');
+            }
+        },
+
+        // Aggiungi questa nuova funzione dopo updateLoginStatus
+        showDefaultUserIcon: function(userInfoEl) {
+            // Rimuovi l'elemento immagine avatar esistente
+            const existingAvatar = userInfoEl.querySelector('.user-avatar');
+            if (existingAvatar) {
+                existingAvatar.style.display = 'none';
+            }
+
+            // Verifica se esiste già un'icona utente, se sì, rimuovila per assicurarsi che non ci siano duplicati
+            const existingIcon = userInfoEl.querySelector('.user-icon');
+            if (existingIcon) {
+                userInfoEl.removeChild(existingIcon);
+            }
+
+            // Crea un elemento per l'icona utente predefinita
+            const userIcon = document.createElement('div');
+            userIcon.className = 'user-icon';
+            userIcon.innerHTML = '<i class="fas fa-user"></i>';
+
+            // Inserisci l'icona predefinita prima del nome utente
+            const userName = userInfoEl.querySelector('.user-name');
+            if (userName) {
+                userInfoEl.insertBefore(userIcon, userName);
+            } else {
+                userInfoEl.appendChild(userIcon);
+            }
+
+            console.log('Icona utente predefinita impostata');
+        },
 
         // Login con Google
         loginWithGoogle: function() {
