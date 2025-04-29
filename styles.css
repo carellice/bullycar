@@ -1911,3 +1911,39 @@ input, textarea, select, [contenteditable="true"] {
     width: 24px;
     text-align: center;
 }
+
+/* Stile per i pulsanti bloccati */
+.icon-button.locked {
+    background-color: var(--background-primary);
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.icon-button.locked:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .icon-button.locked:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Stile per l'input password */
+.password-input-container {
+    margin: 1rem 0;
+}
+
+.password-input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.password-input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
