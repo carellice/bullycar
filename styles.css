@@ -2025,3 +2025,174 @@ input, textarea, select, [contenteditable="true"] {
 .clickable-plate:active {
     transform: scale(0.98);
 }
+
+/* Stili migliorati per il pulsante di chiusura della notifica */
+
+/* Modifica lo stile del pulsante di chiusura per renderlo rotondo */
+.notification-close {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+/* Effetto hover più evidente */
+.notification-close:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+/* Effetto al click */
+.notification-close:active {
+    transform: scale(0.95);
+}
+
+/* Stile per l'icona X all'interno del pulsante */
+.notification-close i {
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Styling specifico per la dark mode */
+.dark-mode .notification-close {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+}
+
+.dark-mode .notification-close:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Migliora anche lo stile generale della notifica */
+.notification {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    max-width: 320px;
+    word-wrap: break-word;
+    animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease 3.7s forwards;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dark-mode .notification-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.notification-body {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Colori per i diversi tipi di notifica */
+.notification-success {
+    background-color: #e8f5e9;
+    border-left: 4px solid var(--success-color);
+}
+
+.notification-error {
+    background-color: #ffebee;
+    border-left: 4px solid var(--danger-color);
+}
+
+.notification-warning {
+    background-color: #fff8e1;
+    border-left: 4px solid var(--warning-color);
+}
+
+.notification-info {
+    background-color: #e3f2fd;
+    border-left: 4px solid var(--accent-color);
+}
+
+/* Versioni dark mode dei colori */
+.dark-mode .notification-success {
+    background-color: rgb(52, 199, 89);
+}
+
+.dark-mode .notification-error {
+    background-color: rgb(255, 69, 58);
+}
+
+.dark-mode .notification-warning {
+    background-color: rgb(255, 159, 10);
+}
+
+.dark-mode .notification-info {
+    background-color: rgb(10, 132, 255);
+}
+
+/* Correzione delle animazioni delle notifiche */
+
+/* Definizione dell'animazione slideInRight */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Definizione dell'animazione fadeOut */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* Applica l'animazione alle notifiche */
+.notification {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    max-width: 320px;
+    word-wrap: break-word;
+
+    /* Applica le animazioni */
+    animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease 3.7s forwards;
+}
+
+/* Assicurati che il container delle notifiche sia posizionato correttamente */
+#notifications-container {
+    position: fixed;
+    top: 5rem;
+    right: 1rem;
+    width: 300px;
+    max-width: 100%;
+    z-index: 50;
+}
