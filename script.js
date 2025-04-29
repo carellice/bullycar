@@ -1572,7 +1572,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="info-item">
                         <div class="info-label">Targa</div>
-                        <div class="info-value">${car.plate}</div>
+                        <div class="info-value clickable-plate" title="Clicca per copiare la targa" data-plate="${car.plate}">
+                            ${car.plate}
+                        </div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Immatricolazione</div>
@@ -1584,6 +1586,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
+
+            // Aggiungi l'event listener per la targa cliccabile
+            const clickablePlate = infoContainer.querySelector('.clickable-plate');
+            if (clickablePlate) {
+                clickablePlate.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const plate = e.currentTarget.dataset.plate;
+                    this.copyToClipboard(plate);
+                });
+            }
+
+            // Resetta tabs
+            this.switchTab('maintenance');
             
             // Resetta tabs
             this.switchTab('maintenance');
@@ -3766,8 +3781,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     return resolve(pdfDataUrl); // Fallback all'originale in caso di errore
                 }
             });
-        }
+        },
 
+        // Funzione per copiare negli appunti
+        copyToClipboard: function(text) {
+            // Crea un elemento di input temporaneo
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+
+            // Seleziona il testo
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // Per dispositivi mobili
+
+            // Copia il testo negli appunti
+            document.execCommand('copy');
+
+            // Rimuovi l'elemento temporaneo
+            document.body.removeChild(tempInput);
+
+            // Mostra notifica di successo
+            this.showNotification('Copiato', `Targa "${text}" copiata negli appunti`, 'success');
+        }
     };
 
     // Inizializza l'app
