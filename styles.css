@@ -2196,3 +2196,50 @@ input, textarea, select, [contenteditable="true"] {
     max-width: 100%;
     z-index: 50;
 }
+
+/* Assicura che tutti i pulsanti abbiano il testo centrato correttamente */
+.primary-button,
+.secondary-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Fix specifico per il dispositivo mobile */
+@media (max-width: 768px) {
+    .form-buttons {
+        width: 100%;
+    }
+
+    .form-buttons button {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        padding: 0.8rem;
+    }
+
+    /* Assicurati che l'icona e il testo siano allineati correttamente */
+    .primary-button i,
+    .secondary-button i {
+        margin-right: 8px;
+    }
+
+    /* Fix per il contenuto flex dei pulsanti */
+    .primary-button,
+    .secondary-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+/* Fix per il pulsante Salva nel form di inserimento auto e manutenzione */
+#car-form .primary-button,
+#maintenance-form .primary-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
