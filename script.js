@@ -2037,28 +2037,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
         getImminentReminders: function(car) {
             if (!car.maintenance) return [];
-            
+
             const today = new Date();
-            const imminentReminders = [];
-            
+
+            // NUOVA LOGICA: Raggruppa i promemoria per tipo e mantieni solo il più recente
+            // Crea un oggetto per raggruppare gli interventi per tipo
+            const latestMaintenanceByType = {};
+
+            // Identifica l'intervento più recente per ogni tipo
             car.maintenance.forEach(m => {
+                if (!m.reminder) return; // Salta interventi senza promemoria
+
+                const maintenanceType = m.type; // 'bollo', 'tagliando', ecc.
+
+                // Se non abbiamo ancora un intervento per questo tipo, o se questo è più recente
+                if (!latestMaintenanceByType[maintenanceType] ||
+                    new Date(m.date) > new Date(latestMaintenanceByType[maintenanceType].date)) {
+
+                    latestMaintenanceByType[maintenanceType] = m;
+                }
+            });
+
+            // Converti l'oggetto in un array di interventi (solo i più recenti per ogni tipo)
+            const uniqueMaintenance = Object.values(latestMaintenanceByType);
+
+            const imminentReminders = [];
+
+            uniqueMaintenance.forEach(m => {
                 if (!m.reminder) return;
-                
+
                 const r = m.reminder;
                 let isImminent = false;
                 let status = 'normal';
                 let info = '';
-                
+
                 // Controlla scadenza per data
                 if ((r.type === 'date' || r.type === 'both' || r.type === 'interval') && r.date) {
                     const dueDate = new Date(r.date);
                     const diffTime = dueDate - today;
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
+
                     if (diffDays <= 0) {
                         status = 'urgent';
                         isImminent = true;
-                        
+
                         if (diffDays === 0) {
                             info = 'oggi';
                         } else {
@@ -2067,7 +2089,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (diffDays <= 30) {
                         status = 'warning';
                         isImminent = true;
-                        
+
                         if (diffDays === 1) {
                             info = 'domani';
                         } else {
@@ -2075,31 +2097,31 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 }
-                
+
                 // Controlla scadenza per chilometraggio
                 if ((r.type === 'mileage' || r.type === 'both') && r.mileage) {
                     const diffMileage = r.mileage - car.mileage;
-                    
+
                     if (diffMileage <= 0) {
                         status = 'urgent';
                         isImminent = true;
-                        
+
                         if (!info) {
                             info = `da fare (${r.mileage.toLocaleString()} km)`;
                         }
                     } else if (diffMileage <= 1000) {
                         status = 'warning';
                         isImminent = true;
-                        
+
                         if (!info) {
                             info = `tra ${diffMileage.toLocaleString()} km`;
                         }
                     }
                 }
-                
+
                 if (isImminent) {
                     const typeName = m.type === 'custom' ? m.customType : this.getMaintenanceTypeName(m.type);
-                    
+
                     imminentReminders.push({
                         typeName: typeName,
                         status: status,
@@ -2107,30 +2129,48 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             });
-            
+
             // Ordina per urgenza (urgent prima di warning)
             imminentReminders.sort((a, b) => {
                 const statusOrder = { urgent: 0, warning: 1, normal: 2 };
                 return statusOrder[a.status] - statusOrder[b.status];
             });
-            
+
             return imminentReminders;
         },
-        
+
         getCarAlerts: function(car) {
             const alerts = [];
             const today = new Date();
-            
-            // Controlla promemoria
+
+            // Creiamo un oggetto per tenere traccia dell'ultimo intervento per ogni tipo
+            const latestMaintenanceByType = {};
+
+            // Identifica l'intervento più recente per ogni tipo
             car.maintenance.forEach(maintenance => {
+                const maintenanceType = maintenance.type; // 'bollo', 'tagliando', ecc.
+
+                // Se non abbiamo ancora un intervento per questo tipo, o se questo è più recente
+                if (!latestMaintenanceByType[maintenanceType] ||
+                    new Date(maintenance.date) > new Date(latestMaintenanceByType[maintenanceType].date)) {
+
+                    latestMaintenanceByType[maintenanceType] = maintenance;
+                }
+            });
+
+            // Converti l'oggetto in un array di interventi (solo i più recenti per ogni tipo)
+            const uniqueMaintenance = Object.values(latestMaintenanceByType);
+
+            // Controlla promemoria solo per gli interventi più recenti per tipo
+            uniqueMaintenance.forEach(maintenance => {
                 if (maintenance.reminder) {
                     const r = maintenance.reminder;
-                    
+
                     if ((r.type === 'date' || r.type === 'both') && r.date) {
                         const dueDate = new Date(r.date);
                         const diffTime = dueDate - today;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
+
                         if (diffDays <= 0) {
                             // Scaduto
                             const type = maintenance.type === 'custom' ? maintenance.customType : this.getMaintenanceTypeName(maintenance.type);
@@ -2141,10 +2181,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             alerts.push(`${type} in scadenza`);
                         }
                     }
-                    
+
                     if ((r.type === 'mileage' || r.type === 'both') && r.mileage) {
                         const diffMileage = r.mileage - car.mileage;
-                        
+
                         if (diffMileage <= 0) {
                             // Scaduto
                             const type = maintenance.type === 'custom' ? maintenance.customType : this.getMaintenanceTypeName(maintenance.type);
@@ -2157,7 +2197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
-            
+
             return alerts;
         },
 
@@ -2474,11 +2514,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 container.appendChild(docItem);
             });
         },
-        
+
         renderRemindersList: function(car) {
             const container = this.elements.remindersList;
             container.innerHTML = '';
-            
+
             if (!car.maintenance || car.maintenance.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -2487,10 +2527,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 return;
             }
-            
+
             // Filtra solo gli interventi con promemoria
             const reminders = car.maintenance.filter(m => m.reminder);
-            
+
             if (reminders.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -2499,26 +2539,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 return;
             }
-            
+
             // Array per ordinare i promemoria per urgenza
             const today = new Date();
-            const nextReminders = [];
-            
+
+            // NUOVA LOGICA: Raggruppa i promemoria per tipo e mantieni solo il più recente
+            // Crea un oggetto per raggruppare gli interventi per tipo
+            const latestMaintenanceByType = {};
+
+            // Identifica l'intervento più recente per ogni tipo
             reminders.forEach(m => {
+                const maintenanceType = m.type; // 'bollo', 'tagliando', ecc.
+
+                // Se non abbiamo ancora un intervento per questo tipo, o se questo è più recente
+                if (!latestMaintenanceByType[maintenanceType] ||
+                    new Date(m.date) > new Date(latestMaintenanceByType[maintenanceType].date)) {
+
+                    latestMaintenanceByType[maintenanceType] = m;
+                }
+            });
+
+            // Converti l'oggetto in un array di interventi (solo i più recenti per ogni tipo)
+            const uniqueReminders = Object.values(latestMaintenanceByType);
+
+            // Processa i promemoria unici per creare gli elementi visualizzati
+            const nextReminders = [];
+
+            uniqueReminders.forEach(m => {
                 const r = m.reminder;
                 if (!r) return;
-                
+
                 let daysUntil = Infinity;
                 let mileageUntil = Infinity;
                 let status = 'normal';
                 let isImminent = false;
-                
+
                 // Calcola giorni rimanenti
                 if ((r.type === 'date' || r.type === 'both' || r.type === 'interval') && r.date) {
                     const dueDate = new Date(r.date);
                     const diffTime = dueDate - today;
                     daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
+
                     if (daysUntil <= 0) {
                         status = 'urgent';
                         isImminent = true;
@@ -2527,11 +2588,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         isImminent = true;
                     }
                 }
-                
+
                 // Calcola chilometri rimanenti
                 if ((r.type === 'mileage' || r.type === 'both') && r.mileage) {
                     mileageUntil = r.mileage - car.mileage;
-                    
+
                     if (mileageUntil <= 0) {
                         status = 'urgent';
                         isImminent = true;
@@ -2540,7 +2601,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         isImminent = true;
                     }
                 }
-                
+
                 nextReminders.push({
                     maintenance: m,
                     daysUntil: daysUntil,
@@ -2549,10 +2610,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     isImminent: isImminent
                 });
             });
-            
+
             // Calcola il numero di promemoria imminenti per il badge
             const imminentCount = nextReminders.filter(item => item.isImminent).length;
-            
+
             // Aggiorna il badge sul tab dei promemoria
             const remindersTabButton = document.querySelector('.tab-button[data-tab="reminders"]');
             if (remindersTabButton) {
@@ -2561,7 +2622,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (existingBadge) {
                     existingBadge.remove();
                 }
-                
+
                 // Aggiungi nuovo badge se ci sono promemoria imminenti
                 if (imminentCount > 0) {
                     const badge = document.createElement('span');
@@ -2570,36 +2631,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     remindersTabButton.appendChild(badge);
                 }
             }
-            
+
             // Ordina per urgenza e poi per data
             nextReminders.sort((a, b) => {
                 // Prima per stato (urgent, warning, normal)
                 const statusOrder = { urgent: 0, warning: 1, normal: 2 };
                 const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-                
+
                 if (statusDiff !== 0) return statusDiff;
-                
+
                 // Poi per giorni rimanenti
                 if (a.daysUntil !== b.daysUntil) return a.daysUntil - b.daysUntil;
-                
+
                 // Infine per chilometri rimanenti
                 return a.mileageUntil - b.mileageUntil;
             });
-            
+
             nextReminders.forEach(item => {
                 const m = item.maintenance;
                 const r = m.reminder;
-                
+
                 const reminderItem = document.createElement('div');
                 reminderItem.className = 'reminder-item';
-                
+
                 // Aggiungi la classe 'imminent' se il promemoria è imminente
                 if (item.isImminent) {
                     reminderItem.classList.add('imminent');
                 }
-                
+
                 const typeName = m.type === 'custom' ? m.customType : this.getMaintenanceTypeName(m.type);
-                
+
                 reminderItem.innerHTML = `
                     <div class="reminder-icon reminder-${item.status}">
                         <i class="fas fa-bell"></i>
@@ -2609,7 +2670,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="reminder-date">${this.formatReminderInfo(r)}</div>
                     </div>
                 `;
-                
+
                 container.appendChild(reminderItem);
             });
         },
@@ -2728,25 +2789,46 @@ document.addEventListener('DOMContentLoaded', function() {
         checkReminders: function() {
             const today = new Date();
             let notifications = 0;
-            
+
             this.data.cars.forEach(car => {
                 if (!car.maintenance) return;
-                
+
+                // NUOVA LOGICA: Raggruppa i promemoria per tipo e mantieni solo il più recente
+                // Crea un oggetto per raggruppare gli interventi per tipo
+                const latestMaintenanceByType = {};
+
+                // Identifica l'intervento più recente per ogni tipo
                 car.maintenance.forEach(m => {
+                    if (!m.reminder) return; // Salta interventi senza promemoria
+
+                    const maintenanceType = m.type; // 'bollo', 'tagliando', ecc.
+
+                    // Se non abbiamo ancora un intervento per questo tipo, o se questo è più recente
+                    if (!latestMaintenanceByType[maintenanceType] ||
+                        new Date(m.date) > new Date(latestMaintenanceByType[maintenanceType].date)) {
+
+                        latestMaintenanceByType[maintenanceType] = m;
+                    }
+                });
+
+                // Converti l'oggetto in un array di interventi (solo i più recenti per ogni tipo)
+                const uniqueMaintenance = Object.values(latestMaintenanceByType);
+
+                uniqueMaintenance.forEach(m => {
                     if (!m.reminder) return;
-                    
+
                     const r = m.reminder;
-                    
+
                     // Controllo scadenza per data
                     if ((r.type === 'date' || r.type === 'both') && r.date) {
                         const dueDate = new Date(r.date);
                         const diffTime = dueDate - today;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
+
                         if (diffDays <= 7 && diffDays >= 0) {
                             // Mostra notifica se la scadenza è entro 7 giorni
                             const typeName = m.type === 'custom' ? m.customType : this.getMaintenanceTypeName(m.type);
-                            
+
                             let message;
                             if (diffDays === 0) {
                                 message = `${car.name}: ${typeName} scade oggi!`;
@@ -2755,7 +2837,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             } else {
                                 message = `${car.name}: ${typeName} scade tra ${diffDays} giorni (${this.formatDate(r.date)})`;
                             }
-                            
+
                             // Limita le notifiche a 3 per non sovraccaricare l'interfaccia
                             if (notifications < 3) {
                                 this.showNotification('Promemoria', message, 'warning');
@@ -2763,19 +2845,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
                     }
-                    
+
                     // Controllo scadenza per chilometraggio
                     if ((r.type === 'mileage' || r.type === 'both') && r.mileage) {
                         const diffMileage = r.mileage - car.mileage;
-                        
+
                         if (diffMileage <= 500 && diffMileage >= 0) {
                             // Mostra notifica se mancano meno di 500 km
                             const typeName = m.type === 'custom' ? m.customType : this.getMaintenanceTypeName(m.type);
-                            
+
                             // Limita le notifiche a 3
                             if (notifications < 3) {
                                 this.showNotification(
-                                    'Promemoria', 
+                                    'Promemoria',
                                     `${car.name}: ${typeName} da effettuare tra ${diffMileage} km`,
                                     'warning'
                                 );
