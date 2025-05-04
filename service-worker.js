@@ -1,77 +1,81 @@
-// Nome della cache
-const CACHE_NAME = 'bullycar-cache-v9';
-
-// File da memorizzare nella cache
-const urlsToCache = [
-    './',
-    './index.html',
-    './styles.css',
-    './script.js',
-    './manifest.json',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2'
-];
-
-// Installazione del service worker
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Cache aperta');
-                return cache.addAll(urlsToCache);
-            })
-    );
-});
-
-// Recupero delle risorse
+// Service worker che non cacha le risorse e richiede sempre connessione internet
 self.addEventListener('fetch', (event) => {
+    // Bypassa la cache e richiedi sempre la rete
     event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // Cache hit - restituisci la risposta dalla cache
-                if (response) {
-                    return response;
+        fetch(event.request)
+            .catch((error) => {
+                console.error('Errore di rete:', error);
+
+                // Per le richieste di navigazione (caricamento della pagina)
+                if (event.request.mode === 'navigate') {
+                    return new Response(
+                        `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>BullyCar - Connessione assente</title>
+                <style>
+                  body {
+                    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                    padding: 20px;
+                    text-align: center;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 80vh;
+                  }
+                  h1 { color: #007aff; }
+                  button {
+                    background: #007aff;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    margin-top: 20px;
+                  }
+                </style>
+              </head>
+              <body>
+                <h1>Connessione Internet necessaria</h1>
+                <p>BullyCar richiede una connessione internet per funzionare.</p>
+                <p>Verifica la tua connessione e riprova.</p>
+                <button onclick="window.location.reload()">Riprova</button>
+              </body>
+            </html>
+            `,
+                        {
+                            headers: {
+                                'Content-Type': 'text/html',
+                                'Cache-Control': 'no-store'
+                            },
+                        }
+                    );
                 }
 
-                // Clona la richiesta perché è un flusso e può essere usata solo una volta
-                const fetchRequest = event.request.clone();
-
-                return fetch(fetchRequest)
-                    .then((response) => {
-                        // Verifica che la risposta sia valida
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-
-                        // Clona la risposta perché è un flusso e può essere usata solo una volta
-                        const responseToCache = response.clone();
-
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                // Non memorizzare nella cache le richieste di API o risorse dinamiche
-                                if (!event.request.url.includes('/api/')) {
-                                    cache.put(event.request, responseToCache);
-                                }
-                            });
-
-                        return response;
-                    });
+                // Per altre richieste, restituisci un errore semplice
+                return new Response('Errore di rete', {
+                    status: 503,
+                    headers: { 'Cache-Control': 'no-store' }
+                });
             })
     );
 });
 
-// Attivazione e pulizia delle vecchie cache
-self.addEventListener('activate', (event) => {
-    const cacheWhitelist = [CACHE_NAME];
+// Impedisci qualsiasi caching
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
 
+// Cancella tutte le cache esistenti durante l'attivazione
+self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        // Se questa cache non è nella whitelist, eliminala
-                        return caches.delete(cacheName);
-                    }
+                    return caches.delete(cacheName);
                 })
             );
         })
