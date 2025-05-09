@@ -18,7 +18,7 @@ BullyCar è una Progressive Web App (PWA) per la gestione completa delle tue aut
 
 BullyCar è una PWA, quindi può essere installata su qualsiasi dispositivo con un browser moderno:
 
-1. Apri l'app nel tuo browser: [URL dell'app]
+1. Apri l'app nel tuo browser: [BullyCar](https://appbullycar.netlify.app/)
 2. Su Desktop: Clicca sull'icona di installazione nella barra degli indirizzi
 3. Su Mobile: Scegli "Aggiungi a schermata Home" dal menu del browser
 
